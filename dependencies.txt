@@ -1,0 +1,8 @@
+pacman -S inotify-tools
+pacman -S wpctl
+pacman -S brightnessctl
+yay -S python-pywalfox
+
+networkmanager
+awk
+jq

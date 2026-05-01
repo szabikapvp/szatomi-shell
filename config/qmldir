@@ -1,0 +1,4 @@
+module qs.config
+
+singleton Settings 1.0 Settings.qml
+singleton Colors 1.0 Colors.qml
