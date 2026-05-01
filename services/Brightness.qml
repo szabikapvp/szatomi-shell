@@ -21,7 +21,6 @@ Singleton {
         stdout: SplitParser {
             onRead: msg => {
                 const val = parseInt(msg);
-                console.warn(val)
                 
                 if (!isNaN(val)) {
                     level = val;

@@ -27,8 +27,8 @@ Item {
             if (Battery.getLevel() <= 80) return "battery-5"
             if (Battery.getLevel() <= 95) return "battery-6"
             if (Battery.getLevel() <= 100) return "battery-7"
+            return "battery-0"
         }
-
     }
 
     Item {

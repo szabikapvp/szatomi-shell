@@ -3,7 +3,6 @@ import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
-import Quickshell.Networking
 import "../../components/widgets"
 import "../controlcenter"
 

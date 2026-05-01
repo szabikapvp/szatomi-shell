@@ -4,7 +4,7 @@ import Qt5Compat.GraphicalEffects
 import QtQuick.Layouts
 import "../../components"
 
-import qs.service
+import qs.services
 import qs.config
 
 
