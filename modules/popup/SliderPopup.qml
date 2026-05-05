@@ -12,7 +12,7 @@ PanelWindow {
 
     property int popupHeight: 50
     property int popupWidth: 300
-    property int bottom: 36
+    property int bottom: Settings.osdYPosition
 
     property int prop: 0
     property Component icon: VolumeIcon {}
@@ -39,7 +39,7 @@ PanelWindow {
         target: osdRect
         property: "y"
         to: 0
-        duration: 400
+        duration: 300
         easing.type: Easing.OutCubic
     }
 
@@ -63,7 +63,7 @@ PanelWindow {
 
         RowLayout {
 
-            spacing: Settings.gap * 2
+            spacing: Settings.spacing * 2
             anchors.fill: parent
 
             Item {}

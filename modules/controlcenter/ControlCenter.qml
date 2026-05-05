@@ -3,17 +3,20 @@ import Quickshell.Io
 import QtQuick
 import QtQml
 import QtQuick.Layouts
+import QtQuick.Controls
 import Quickshell.Wayland
+import Qt5Compat.GraphicalEffects
 import "../../components/widgets"
 
 import qs.config
 import qs.services
+import qs.utils
 
 PanelWindow {
     id: root
     
-    property int panelWidth: 512
-    property int marginSize: Settings.barMargin * 2
+    property int panelWidth: 480
+    property int marginSize: Settings.windowSpacing
 
     property var visiblePage: mainPage
     property bool showing: false
@@ -24,22 +27,12 @@ PanelWindow {
         watchChanges: true
         
         onFileChanged: {
-            
-            if (!showing && !slideIn.running && !slideOut.running) {
-                slideIn.restart()
-                root.visiblePage = mainPage
-                showing = !showing
-            }
-
-            else if (showing && !slideIn.running && !slideOut.running) {
-                slideOut.restart()
-                showing = !showing
-            }     
+            if (!showing) open()
+            else close()
         }
     }
 
     anchors {
-        top: true
         right: true
         bottom: true
     }
@@ -52,9 +45,17 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     exclusiveZone: 0
 
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+
     color: "transparent"
     implicitWidth: panelWidth + marginSize
+    implicitHeight: visiblePage.height + (Settings.spacing * 4)
     aboveWindows: true
+
+    Shortcut {
+        sequence: "Escape"
+        onActivated: close()
+    }
 
     SequentialAnimation {
         id: slideIn
@@ -92,47 +93,70 @@ PanelWindow {
         }
     }
 
+/*     Behavior on implicitHeight {
+        NumberAnimation {
+            duration: 100
+            easing.type: Easing.OutCubic
+        }
+    } */
+
     Rectangle {
         id: osdRect
+
+        Keys.onEscapePressed: (event) => {
+            slideOut.restart()
+            showing = !showing
+        }
         
-        x: panelWidth
-        height: root.height
+        height: visiblePage.height + (Settings.spacing * 4)
         width: panelWidth
         radius: Settings.radiusLg
-        color: Qt.lighter(Colors.background, 2)
-        border.width: 1
-        border.color: Qt.lighter(Colors.background, 4)
+        bottomRightRadius: Settings.radiusSm
 
-        FlexboxLayout {
+        color: Colors.background
+        border.width: 1
+        border.color: Colors.backgroundSubtle
+
+        anchors.bottom: parent.bottom
+
+        ColumnLayout {
             id: mainPage
 
             visible: root.visiblePage == this
 
-            anchors.fill: parent
-            anchors.margins: Settings.gap * 2
-            gap: Settings.gap
-            wrap: FlexboxLayout.Wrap
+            width: parent.width - (Settings.spacing * 4)
+            
+            x: Settings.spacing * 2
+            y: Settings.spacing * 2
 
-            Button {
-                id: networkButton
-                icon: Network.icon
-                text: Network.wifiStatus == "connected" ? Network.networkName : "Wi-Fi"
-                rightSide: true
-                color: Network.wifiStatus == "connected" ? Colors.primary : Colors.foreground
+            spacing: Settings.spacing
 
-                onClicked: Network.toggleWifi()
+            RowLayout {
+                spacing: Settings.spacing
 
-                onRightSideClicked: changePage(networksPage)
+                Button {
+                    id: networkButton
+                    icon: Network.icon
+                    text: Network.wifiStatus == "connected" ? Network.networkName : "Wi-Fi"
+                    rightSide: true
+                    color: Network.wifiStatus == "connected" ? Colors.primary : Colors.foreground
+
+                    onClicked: Network.toggleWifi()
+
+                    onRightSideClicked: changePage(networksPage)
+                }
+
+                Button {
+                    icon: "bluetooth-off"
+                    text: "Bluetooth"
+                }
             }
 
             Button {
-                icon: "bluetooth-off"
-                text: "Bluetooth"
-            }
-
-            Button {
+                Layout.preferredWidth: parent.width
                 icon: "notifications-off"
                 text: "Notifications"
+                disabled: true
             }
         
             Button {
@@ -142,28 +166,30 @@ PanelWindow {
             }
         }
 
-        FlexboxLayout {
+        ColumnLayout {
             id: networksPage
 
             visible: visiblePage == this
             
-            anchors.fill: parent
-            anchors.margins: Settings.gap * 2
-            gap: Settings.gap * 2
-            wrap: FlexboxLayout.Wrap
-                        
-            Component.onCompleted: Network.rescanWifi()
+            width: parent.width - (Settings.spacing * 4)
+            height: 500
+
+            x: Settings.spacing * 2
+            y: Settings.spacing * 2
+            
+            spacing: Settings.spacing * 2
 
             RowLayout {
-                
-                Layout.fillWidth: true
+
                 Layout.preferredWidth: parent.width
-                spacing: Settings.gap
+                
+                width: parent.width                 
+                spacing: Settings.spacing
 
                 Button {
                     icon: "arrow-left"
                     iconOnly: true
-                    size: "sm"
+                    size: "md"
                     type: "ghost"
                     textColor: Colors.text
                     Layout.fillWidth: false
@@ -172,7 +198,7 @@ PanelWindow {
                 }
 
                 Text {
-                    text: "Wi-Fi Networks"
+                    text: "Wi-Fi"
                     color: Colors.text
                     font.pixelSize: 24
                     font.family: Settings.fontFamily
@@ -182,10 +208,13 @@ PanelWindow {
                     verticalAlignment: Text.AlignVCenter
                 }
 
+                Loading { visible: Network.wifiScanning }
+
                 Button {
+                    disabled: Network.wifiScanning
                     icon: "reload"
                     iconOnly: true
-                    size: "sm"
+                    size: "md"
                     type: "ghost"
                     textColor: Colors.text
                     Layout.fillWidth: false
@@ -195,52 +224,93 @@ PanelWindow {
             }
 
             Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredWidth: parent.width
-                height: 2
-                color: Qt.darker(Colors.text, 5)
+                width: parent.width
+                height: 1
+                color: Colors.backgroundSubtle
             }
 
-            ColumnLayout {
+            ScrollView {
+                id: scrollView
 
+                Layout.fillHeight: true
                 Layout.fillWidth: true
 
-                Repeater {
-                    model: Network.wifiNetworks
+                clip: true
+                contentWidth: availableWidth
+                contentHeight: networkList.implicitHeight
 
-                    Button {
-                        visible: !Network.wifiScanning && Network.wifiEnabled
-                        type: "ghost"
-                        icon: strength > 80 
-                            ? "wifi-4" :
-                            strength > 60 ? "wifi-3" :
-                            strength > 40 ? "wifi-2" :
-                            strength > 20 ? "wifi-1" :
-                            "wifi-0"
+                ScrollBar.vertical: ScrollBar {
+                    id: vBar
+                    
+                    visible: size < 1.0
 
-                        text: ssid
-                        textColor: Colors.text
-                        size: "sm"
-                        bold: active
-                        Layout.preferredWidth: 500
+                    policy: ScrollBar.AsNeeded
+                    anchors.right: parent.right
+
+                    background: Rectangle {
+                        implicitWidth: 6
+                        implicitHeight: scrollView.height
+                        color: "transparent" 
+                    }
+
+                    contentItem: Rectangle {
+                        implicitWidth: 4
+                        radius: 3
+                        
+                        color: {
+                            if (vBar.pressed) return Colors.primaryActive 
+                            if (vBar.hovered) return Colors.primaryHover
+                            return Qt.alpha(Colors.foreground, 0.5)
+                        }
                     }
                 }
 
-                Text {
-                    visible: !Network.wifiEnabled || Network.wifiScanning
-                    
-                    text: {
-                        if (!Network.wifiEnabled) return "Wi-Fi is turned off"
-                        else if (Network.wifiScanning) return "Scanning..."
-                        return ""
+                ColumnLayout {
+                    id: networkList
+
+                    width: scrollView.availableWidth
+
+                    Button {
+                        Layout.fillWidth: true
+                        visible: Network.wifiStatus === "connected"
+                        icon: Network.icon
+                        text: Network.networkName
+                        onClicked: Network.disconnectWifiNetwork()
+                    } 
+
+                    Repeater {
+                        model: Network.wifiNetworks
+                        required property var modelData
+
+                        NetworkItem {
+                            conn: modelData
+                            visible: Network.wifiEnabled && conn.ssid != Network.networkName
+                        }
                     }
 
-                    color: Colors.text
-                    font.pixelSize: Settings.fontSize
-                    font.family: Settings.fontFamily
-                    font.weight: 300
-                    Layout.fillWidth: true
-                    verticalAlignment: Text.AlignVCenter
+                    Text {
+                        visible: !Network.wifiEnabled
+                        
+                        text: {
+                            if (!Network.wifiEnabled) return "Wi-Fi is turned off"
+                            else if (Network.wifiScanning) return "Scanning..."
+                            return ""
+                        }
+
+                        color: Colors.text
+                        font.pixelSize: Settings.fontSize
+                        font.family: Settings.fontFamily
+                        font.weight: 300
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 64
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    Loading {
+                        visible: !Network.wifiEnabled
+                        Layout.fillWidth: true
+                    }
                 }
             }
         }
@@ -251,4 +321,26 @@ PanelWindow {
         
         if (page == networksPage) Network.rescanWifi()
     }
-} 
+
+    function close() {
+        if (showing && !slideIn.running && !slideOut.running) {
+
+            if (root.activeFocusItem) root.activeFocusItem.focus = false
+            slideOut.restart()
+            showing = !showing
+        }   
+    }
+
+    function open() {
+        if (!showing && !slideIn.running && !slideOut.running) {
+            slideIn.restart()
+            root.visiblePage = mainPage
+            showing = !showing
+        }
+    }
+
+    function toggle() {
+        if (showing) close()
+        else open()
+    }
+}

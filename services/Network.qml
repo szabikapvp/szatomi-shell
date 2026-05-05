@@ -60,16 +60,27 @@ Singleton {
         conn.askingPassword = false;
         root.wifiConnectTarget = conn;
         // We use this instead of `nmcli connection up SSID` because this also creates a connection profile
-        connectProc.exec(["nmcli", "connection", "up", conn.ssid])
-
+        connectProc.exec(["nmcli", "device", "wifi", "connect", conn.bssid, "name", conn.ssid])
     }
 
     function disconnectWifiNetwork(): void {
         if (active) disconnectProc.exec(["nmcli", "connection", "down", active.ssid]);
     }
 
-    function openPublicWifiPortal() {
-        Quickshell.execDetached(["xdg-open", "https://nmcheck.gnome.org/"]) // From some StackExchange thread, seems to work
+    function changePassword(network: Connection, password: string): void {
+        network.askingPassword = false;
+        root.wifiConnectTarget = network;
+        connectProc.exec({
+            "environment": {
+                "PASSWORD": password,
+                "BSSID": network.bssid,
+                "SSID": network.ssid
+            },
+            "command": [
+                "bash", "-c", 
+                'nmcli connection delete "$SSID" >/dev/null 2>&1; nmcli device wifi connect "$BSSID" password "$PASSWORD" name "$SSID"'
+            ]
+        })
     }
 
     Process {
@@ -105,14 +116,6 @@ Singleton {
         id: disconnectProc
         stdout: SplitParser {
             onRead: getNetworks.running = true
-        }
-    }
-
-    Process {
-        id: changePasswordProc
-        onExited: { // Re-attempt connection after changing password
-            connectProc.running = false
-            connectProc.running = true
         }
     }
 

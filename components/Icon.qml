@@ -26,7 +26,7 @@ Item {
 
     Image {
         id: iconId
-        source: "file:///home/tomi/.config/quickshell/icons/" + icon + ".svg"
+        source: icon != "" ? "file:///home/tomi/.config/quickshell/icons/" + icon + ".svg" : ""
         width: size
         height: size
         fillMode: Image.PreserveAspectFit

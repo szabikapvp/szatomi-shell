@@ -10,21 +10,33 @@ Item {
     id: root
     
     property string type: "primary"
+    property string size: "lg" 
     property string icon: "no-wifi"
     property string text: "Placeholder"
     property string color: Colors.foreground
     property string textColor: Colors.background
-    property string size: "lg" 
-    property int radius: Settings.radiusMd
+    
+    property int radius: (size == "lg" || size == "md") ? Settings.radiusMd : Settings.radiusSm
     property bool bold: true
-
     property bool iconOnly: false
     property bool rightSide: false
+    property int minWidth: 180
+
+    property int fontSize: (size == "lg" || size == "md") ? Settings.fontSize : Settings.fontSize - 2
+
+    property int spacing: Settings.spacing * (
+        size == "lg" 
+        ? 2 : size == "md"
+        ? 1
+        : 1
+    )
+
+    property bool disabled: false
+
+    implicitHeight: content.implicitHeight + spacing * 2
+    implicitWidth: content.implicitWidth + spacing * 2
 
     Layout.fillWidth: true
-    Layout.preferredWidth: iconOnly ? (size == "lg" ? 64 : 46) : 172
-
-    height: size == "lg" ? 64 : 46
 
     signal clicked()
     signal rightSideClicked()
@@ -32,30 +44,35 @@ Item {
     MouseArea {
         id: mouseArea
 
+        enabled: !disabled
+
         hoverEnabled: true
         anchors.fill: parent
         
-        // height: parent.height
-        // width: rightSide ? parent.width / 2 : parent.width
-
-        cursorShape: Qt.PointingHandCursor
+        cursorShape: disabled ? Qt.ArrowCursor : Qt.PointingHandCursor
         onClicked: root.clicked()
     }
 
     Rectangle {
         id: buttonRect
+        
         anchors.fill: parent
+
         color: {
 
             switch (root.type) {
                 case "primary":
 
+                    if (disabled) return Qt.darker(root.color, 2)
+
                     if (mouseArea.containsMouse) {
-                        if (mouseArea.pressed) return Qt.darker(root.color, 1.8)
-                        else return Qt.darker(root.color, 1.3)
+                        if (mouseArea.pressed) return Qt.darker(root.color, Colors.active)
+                        else return Qt.darker(root.color, Colors.hover)
                     } else return root.color
 
                 case "ghost":
+
+                    if (disabled) return "transparent"
 
                     if (mouseArea.containsMouse) {
                         if (mouseArea.pressed) return Qt.alpha(root.color, 0.2)
@@ -73,36 +90,45 @@ Item {
         }
     
         RowLayout {
-        
-            anchors.fill: parent
-            anchors.margins: Settings.gap * (size == "lg" ? 2 : 1)
-            spacing: Settings.gap * (size == "lg" ? 2 : 1)
+            id: content
+
+            x: spacing
+            y: spacing
+
+            spacing: Settings.spacing * (size == "lg" ? 2 : 1)
 
             Icon {
+                visible: root.icon != ""
                 icon: root.icon
                 size: 24
-                color: textColor
+                color: disabled ? Qt.darker(textColor, 1.8) : textColor
             }
 
             Text {
                 visible: !iconOnly
                 text: root.text
-                color: textColor
-                font.pixelSize: Settings.fontSize
+                color: disabled ? Qt.darker(textColor, 1.8) : textColor
+                font.pixelSize: fontSize
                 font.family: Settings.fontFamily
                 font.bold: root.bold
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 wrapMode: Text.NoWrap
             }
-
-            Icon {
-                visible: root.rightSide
-                icon: "arrow-right"
-                size: 24
-                color: textColor
-            }
         }   
+
+        Icon {
+
+            anchors.right: parent.right
+            anchors.rightMargin: spacing
+
+            y: spacing
+
+            visible: root.rightSide
+            icon: "arrow-right"
+            size: 24
+            color: textColor
+        }
     }
 
     
@@ -121,11 +147,20 @@ Item {
 
         MouseArea {
             id: rightMouseArea
-        
+
+            enabled: !disabled
+
             anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
+            cursorShape: disabled ? Qt.ArrowCursor : Qt.PointingHandCursor
             onClicked: root.rightSideClicked()
         }
     }
     
+    function disable() {
+        disabled = true
+    }
+
+    function enable() {
+        disabled = false
+    }
 }

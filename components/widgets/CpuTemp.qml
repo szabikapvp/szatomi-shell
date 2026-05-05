@@ -2,7 +2,7 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
-import "../components/"
+import "../"
 
 import qs.services
 import qs.config

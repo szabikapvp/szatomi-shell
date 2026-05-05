@@ -13,8 +13,8 @@ QtObject {
     property string fontFamily: "Bricolage Grotesque"
     property string headerFont: "Dela Gothic One"
 
-    property int barMargin: 8
-    property int gap: 10
+    property int windowSpacing: 8
+    property int spacing: 10
 
     property int radiusSm: 8
     property int radiusMd: 16
@@ -23,4 +23,17 @@ QtObject {
     property string dateFormat: "MM/dd ddd"
     property string timeFormat: "h:mm"
 
+    // BAR
+
+    property int barHeight: 44
+    property string barPosition: "bottom"
+    property bool barFloating: false
+    property int workspaceCount: 9
+
+    // OSD
+    
+
+    property int osdYPosition: barPosition == "bottom"
+        ? barHeight + (windowSpacing * 2)
+        : windowSpacing * 2
 }

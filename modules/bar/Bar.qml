@@ -15,31 +15,37 @@ PanelWindow {
     screen: modelData
 
     anchors {
-        top: true
+        top: Settings.barPosition == "top"
+        bottom: Settings.barPosition == "bottom"
         left: true
         right: true
     }
 
     margins {
-        left: Settings.barMargin
-        right: Settings.barMargin
-        top: Settings.barMargin
+        left: Settings.barFloating ? Settings.windowSpacing : 0
+        right: Settings.barFloating ? Settings.windowSpacing : 0
+        bottom: Settings.barPosition == "bottom" ?
+            (Settings.barFloating ? Settings.windowSpacing : 0)
+            : 0
+        top: Settings.barPosition == "top" ?
+            (Settings.barFloating ? Settings.windowSpacing : 0)
+            : 0
     }
 
-    implicitHeight: 22 + Settings.gap * 2
+    implicitHeight: Settings.barHeight
     color: "transparent"
 
     Rectangle {
         anchors.fill: parent
         color: Colors.background
-        radius: Settings.radiusSm
+        radius: Settings.barFloating ? Settings.radiusSm : 0
 
         Item {
 
             anchors.fill: parent
-            anchors.margins: Settings.gap
-            anchors.leftMargin: Settings.gap * 2
-            anchors.rightMargin: Settings.gap * 2
+            anchors.margins: Settings.spacing
+            anchors.leftMargin: Settings.spacing * 2
+            anchors.rightMargin: Settings.spacing * 2
 
             // LEFT
             RowLayout {
@@ -47,7 +53,7 @@ PanelWindow {
                 anchors.left: parent.left
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                spacing: Settings.gap
+                spacing: Settings.spacing
                 
                 CpuTemp {}
                 CpuUsage {}
@@ -59,7 +65,7 @@ PanelWindow {
                 anchors.centerIn: parent
                 
                 Repeater {
-                    model: 9 // Number of workspaces
+                    model: Settings.workspaceCount // Number of workspaces
 
                     Rectangle {
 
@@ -91,7 +97,7 @@ PanelWindow {
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                spacing: Settings.gap
+                spacing: Settings.spacing
 
                 WifiIcon {}
                 BatteryIcon {}

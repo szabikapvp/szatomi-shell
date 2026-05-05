@@ -8,10 +8,26 @@ QtObject {
     id: root
 
     property color background: "#1e1e2e"
+    property color backgroundSubtle: "#ffffff"
+    
     property color foreground: "#cdd6f4"
-    property color primary:    "#89b4fa"
+    property color foregroundHover: "#cdd6f4"
+    property color foregroundActive: "#cdd6f4"
+
+    property color primary: "#ffffff"
+    property color primaryHover: "#ffffff"
+    property color primaryActive: "#ffffff"
+    
     property color secondary:  "#f38ba8"
+    property color secondaryHover:  "#f38ba8"
+    property color secondaryActive:  "#f38ba8"
+
     property color text:       "#ffffff"
+    property color textHover:       "#ffffff"
+    property color textActive:       "#ffffff"
+
+    property double hover: 1.5
+    property double active: 2
 
     property FileView pywalWatcher: FileView {
 
@@ -27,11 +43,23 @@ QtObject {
                 var pywal = JSON.parse(this.text());
                 
                 root.background = pywal.special.background;
+                root.backgroundSubtle = Qt.lighter(root.background, 4)
+
                 root.foreground = pywal.special.foreground;
+                root.foregroundHover = Qt.darker(root.foreground, root.hover);
+                root.foregroundActive = Qt.darker(root.foreground, root.active);
                 
-                root.primary    = pywal.colors.color4; 
-                root.secondary  = pywal.colors.color6;
-                root.text       = pywal.special.foreground;
+                root.primary = pywal.colors.color4; 
+                root.primaryHover = Qt.darker(root.primary, root.hover); 
+                root.primaryActive = Qt.darker(root.primary, root.active); 
+
+                root.secondary = pywal.colors.color6;
+                root.secondaryHover = Qt.darker(root.secondary, root.hover);
+                root.secondaryActive = Qt.darker(root.secondary, root.active);
+
+                root.text = pywal.special.foreground;
+                root.textHover = Qt.darker(root.text, root.hover);
+                root.textActive = Qt.darker(root.text, root.active);
 
                 Settings.wallpaper = "file://" + pywal.wallpaper;
 

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import Quickshell
 import "../../components"
+import "../../modules/controlcenter"
 import qs.services
 
 Item {
@@ -9,8 +10,15 @@ Item {
     width: 18
     height: 18
 
-    // cursorShape: Qt.PointingHandCursor
-    // onClicked: Quickshell.execDetached(["kitty", "--class", "nmtui-float", "nmtui"])
+/*    MouseArea {
+        
+        anchors.fill: parent
+        
+        cursorShape: Qt.PointingHandCursor
+        onClicked: () => {
+            
+        }
+    } */
 
     Icon {
         icon: Network.icon
