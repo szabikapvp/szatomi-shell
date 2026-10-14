@@ -93,13 +93,6 @@ PanelWindow {
         }
     }
 
-/*     Behavior on implicitHeight {
-        NumberAnimation {
-            duration: 100
-            easing.type: Easing.OutCubic
-        }
-    } */
-
     Rectangle {
         id: osdRect
 

@@ -42,10 +42,10 @@ QtObject {
             try {
                 var pywal = JSON.parse(this.text());
                 
-                root.background = pywal.special.background;
+                root.background = "#000000" /*pywal.special.background*/;
                 root.backgroundSubtle = Qt.lighter(root.background, 4)
 
-                root.foreground = pywal.special.foreground;
+                root.foreground = "#eeeeee";
                 root.foregroundHover = Qt.darker(root.foreground, root.hover);
                 root.foregroundActive = Qt.darker(root.foreground, root.active);
                 
@@ -57,7 +57,7 @@ QtObject {
                 root.secondaryHover = Qt.darker(root.secondary, root.hover);
                 root.secondaryActive = Qt.darker(root.secondary, root.active);
 
-                root.text = pywal.special.foreground;
+                root.text = "#eeeeee";
                 root.textHover = Qt.darker(root.text, root.hover);
                 root.textActive = Qt.darker(root.text, root.active);
 

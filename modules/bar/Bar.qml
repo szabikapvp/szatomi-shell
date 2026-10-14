@@ -56,8 +56,8 @@ PanelWindow {
                 spacing: Settings.spacing
                 
                 CpuTemp {}
-                CpuUsage {}
-                MemoryUsage {}
+                //CpuUsage {}
+                //MemoryUsage {}
             }
 
             // CENTER
