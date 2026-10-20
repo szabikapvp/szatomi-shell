@@ -8,3 +8,4 @@ singleton Memory Memory.qml
 singleton Processor Processor.qml
 singleton Network Network.qml
 singleton Bluetooth Bluetooth.qml
+singleton Fullscreen Fullscreen.qml

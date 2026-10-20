@@ -20,36 +20,50 @@ PanelWindow {
 
     property var visiblePage: mainPage
     property bool showing: false
-    visible: false
+    visible: panel.progress > 0
+
+    // Resting position for the remembered corner
+    property real cornerX: panelState.right ? panel.parent.width - panel.width - marginSize : marginSize
+    property real cornerY: panelState.bottom ? panel.parent.height - panel.height - marginSize : marginSize
 
     FileView {
         path: "/tmp/toggle_menu"
         watchChanges: true
-        
+
         onFileChanged: {
             if (!showing) open()
             else close()
         }
     }
 
-    anchors {
-        right: true
-        bottom: true
+    // Remembers the corner across restarts
+    FileView {
+        path: Quickshell.statePath("controlcenter.json")
+        onAdapterUpdated: writeAdapter()
+
+        adapter: JsonAdapter {
+            id: panelState
+            property bool right: true
+            property bool bottom: true
+        }
     }
 
-    margins {
-        top: marginSize
-        bottom: marginSize
+    // Fullscreen so the panel can be dragged anywhere, the mask lets clicks through elsewhere
+    anchors {
+        top: true
+        bottom: true
+        left: true
+        right: true
     }
+
+    mask: Region { item: panel }
 
     WlrLayershell.layer: WlrLayer.Overlay
-    exclusiveZone: 0
+    exclusionMode: Fullscreen.exclusionMode(screen)
 
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
     color: "transparent"
-    implicitWidth: panelWidth + marginSize
-    implicitHeight: visiblePage.height + (Settings.spacing * 4)
     aboveWindows: true
 
     Shortcut {
@@ -57,141 +71,173 @@ PanelWindow {
         onActivated: back()
     }
 
-    SequentialAnimation {
-        id: slideIn
+    // One shared progress drives both axes, so the snap always moves in a straight line
+    property real snapProgress: 0
+    property point snapFrom
 
-        PropertyAction {
-            target: root
-            property: "visible"
-            value: true
-        }
+    onSnapProgressChanged: {
+        if (!snap.running) return
+        panel.x = snapFrom.x + (cornerX - snapFrom.x) * snapProgress
+        panel.y = snapFrom.y + (cornerY - snapFrom.y) * snapProgress
+    }
 
-        NumberAnimation {
-            target: osdRect
-            property: "x"
-            to: 0
-            duration: 300
-            easing.type: Easing.OutCubic
+    NumberAnimation {
+        id: snap
+
+        target: root
+        property: "snapProgress"
+        from: 0
+        to: 1
+        duration: Settings.snapDuration
+        easing.type: Easing.OutCubic
+
+        // Dragging broke the bindings, restore them so page height changes keep the corner
+        onFinished: {
+            panel.x = Qt.binding(() => cornerX)
+            panel.y = Qt.binding(() => cornerY)
         }
     }
 
-    SequentialAnimation {
-        id: slideOut
+    PopMask {
+        id: panel
 
-        NumberAnimation {
-            target: osdRect
-            property: "x"
-            to: panelWidth + marginSize
-            duration: 300
-            easing.type: Easing.OutCubic
-        }
-
-        PropertyAction {
-            target: root
-            property: "visible"
-            value: false
-        }
-    }
-
-    Rectangle {
-        id: osdRect
-
-        BackGesture {
-            onTriggered: back()
-        }
-
-        height: visiblePage.height + (Settings.spacing * 4)
+        x: cornerX
+        y: cornerY
         width: panelWidth
+        height: visiblePage.height + (Settings.spacing * 4)
+
+        fromRight: panelState.right
+        fromBottom: panelState.bottom
         radius: Settings.radiusLg
-        bottomRightRadius: Settings.radiusSm
 
-        color: Colors.background
-        border.width: 1
-        border.color: Colors.backgroundSubtle
+        Rectangle {
+            id: osdRect
 
-        anchors.bottom: parent.bottom
+            anchors.fill: parent
 
-        ColumnLayout {
-            id: mainPage
+            BackGesture {
+                onTriggered: back()
+            }
 
-            visible: root.visiblePage == this
+            // Only reachable on empty parts, the content on top takes its own clicks
+            MouseArea {
+                anchors.fill: parent
+                drag.target: panel
+                drag.minimumX: 0
+                drag.minimumY: 0
+                drag.maximumX: panel.parent.width - panel.width
+                drag.maximumY: panel.parent.height - panel.height
+                cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
 
-            width: parent.width - (Settings.spacing * 4)
+                // Dragging moves the panel from C++, which leaves the corner bindings alive.
+                // Break them here, or changing the corner on release jumps the panel there
+                drag.onActiveChanged: {
+                    if (!drag.active) return
+                    panel.x = panel.x
+                    panel.y = panel.y
+                }
+
+                onReleased: {
+                    snapFrom = Qt.point(panel.x, panel.y)
+                    panelState.right = panel.x + panel.width / 2 > panel.parent.width / 2
+                    panelState.bottom = panel.y + panel.height / 2 > panel.parent.height / 2
+                    snap.restart()
+                }
+            }
+
+            // The small corner faces the screen corner
+            radius: Settings.radiusLg
+            topLeftRadius: !panelState.right && !panelState.bottom ? Settings.radiusSm : Settings.radiusLg
+            topRightRadius: panelState.right && !panelState.bottom ? Settings.radiusSm : Settings.radiusLg
+            bottomLeftRadius: !panelState.right && panelState.bottom ? Settings.radiusSm : Settings.radiusLg
+            bottomRightRadius: panelState.right && panelState.bottom ? Settings.radiusSm : Settings.radiusLg
+
+            color: Colors.background
+            border.width: 1
+            border.color: Colors.backgroundSubtle
+
+            ColumnLayout {
+                id: mainPage
+
+                visible: root.visiblePage == this
+
+                width: parent.width - (Settings.spacing * 4)
             
-            x: Settings.spacing * 2
-            y: Settings.spacing * 2
+                x: Settings.spacing * 2
+                y: Settings.spacing * 2
 
-            spacing: Settings.spacing
-
-            RowLayout {
-                Layout.fillWidth: true
                 spacing: Settings.spacing
 
-                Button {
-                    id: networkButton
-                    Layout.preferredWidth: 1
-                    icon: Network.icon
-                    text: Network.wifiStatus == "connected" ? Network.networkName : "Wi-Fi"
-                    rightSide: true
-                    color: Network.wifiStatus == "connected" ? Colors.primary : Colors.foreground
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Settings.spacing
 
-                    onClicked: Network.toggleWifi()
+                    Button {
+                        id: networkButton
+                        Layout.preferredWidth: 1
+                        icon: Network.icon
+                        text: Network.wifiStatus == "connected" ? Network.networkName : "Wi-Fi"
+                        rightSide: true
+                        color: Network.wifiStatus == "connected" ? Colors.primary : Colors.foreground
 
-                    onRightSideClicked: changePage(networksPage)
+                        onClicked: Network.toggleWifi()
+
+                        onRightSideClicked: changePage(networksPage)
+                    }
+
+                    Button {
+                        Layout.preferredWidth: 1
+                        icon: Bluetooth.icon
+                        text: Bluetooth.connectedDevice ? Bluetooth.connectedDevice.name : "Bluetooth"
+                        rightSide: true
+                        color: Bluetooth.connectedDevice ? Colors.primary : Colors.foreground
+                        disabled: !Bluetooth.available || Bluetooth.blocked
+
+                        onClicked: Bluetooth.toggle()
+
+                        onRightSideClicked: changePage(bluetoothPage)
+                    }
                 }
 
                 Button {
-                    Layout.preferredWidth: 1
-                    icon: Bluetooth.icon
-                    text: Bluetooth.connectedDevice ? Bluetooth.connectedDevice.name : "Bluetooth"
-                    rightSide: true
-                    color: Bluetooth.connectedDevice ? Colors.primary : Colors.foreground
-                    disabled: !Bluetooth.available || Bluetooth.blocked
-
-                    onClicked: Bluetooth.toggle()
-
-                    onRightSideClicked: changePage(bluetoothPage)
+                    Layout.preferredWidth: parent.width
+                    icon: "notifications-off"
+                    text: "Notifications"
+                    disabled: true
                 }
-            }
-
-            Button {
-                Layout.preferredWidth: parent.width
-                icon: "notifications-off"
-                text: "Notifications"
-                disabled: true
-            }
         
-            Button {
-                Layout.preferredWidth: parent.width
-                icon: "settings"
-                text: "Settings"
+                Button {
+                    Layout.preferredWidth: parent.width
+                    icon: "settings"
+                    text: "Settings"
+                }
             }
-        }
 
-        WifiPage {
-            id: networksPage
+            WifiPage {
+                id: networksPage
 
-            visible: visiblePage == this
+                visible: visiblePage == this
             
-            width: parent.width - (Settings.spacing * 4)
+                width: parent.width - (Settings.spacing * 4)
 
-            x: Settings.spacing * 2
-            y: Settings.spacing * 2
+                x: Settings.spacing * 2
+                y: Settings.spacing * 2
             
-            onBack: changePage(mainPage)
-        }
+                onBack: changePage(mainPage)
+            }
 
-        BluetoothPage {
-            id: bluetoothPage
+            BluetoothPage {
+                id: bluetoothPage
 
-            visible: visiblePage == this
+                visible: visiblePage == this
 
-            width: parent.width - (Settings.spacing * 4)
+                width: parent.width - (Settings.spacing * 4)
 
-            x: Settings.spacing * 2
-            y: Settings.spacing * 2
+                x: Settings.spacing * 2
+                y: Settings.spacing * 2
 
-            onBack: changePage(mainPage)
+                onBack: changePage(mainPage)
+            }
         }
     }
 
@@ -212,18 +258,18 @@ PanelWindow {
     }
 
     function close() {
-        if (showing && !slideIn.running && !slideOut.running) {
+        if (showing && !panel.running) {
 
             if (root.activeFocusItem) root.activeFocusItem.focus = false
             Bluetooth.stopScan()
-            slideOut.restart()
+            panel.popOut()
             showing = !showing
-        }   
+        }
     }
 
     function open() {
-        if (!showing && !slideIn.running && !slideOut.running) {
-            slideIn.restart()
+        if (!showing && !panel.running) {
+            panel.popIn()
             root.visiblePage = mainPage
             showing = !showing
         }

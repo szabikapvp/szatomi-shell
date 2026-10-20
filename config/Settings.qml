@@ -22,6 +22,12 @@ QtObject {
 
     property int spinnerSize: 24
 
+    // ANIMATIONS
+
+    property int popDuration: 200
+    property int snapDuration: 400
+    property int resizeDuration: 200
+
     property string dateFormat: "MM/dd ddd"
     property string timeFormat: "h:mm"
 

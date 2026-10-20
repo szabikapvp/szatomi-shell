@@ -59,7 +59,7 @@ PanelWindow {
         height: popupHeight
         y: root.height
         color: Colors.background
-        radius: 16
+        radius: Settings.radiusMd
 
         RowLayout {
 

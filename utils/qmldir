@@ -2,3 +2,4 @@ module utils
 
 Loading 1.0 Loading.qml
 BackGesture 1.0 BackGesture.qml
+PopMask 1.0 PopMask.qml
