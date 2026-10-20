@@ -62,8 +62,9 @@ PanelWindow {
 
             // CENTER
             RowLayout {
+                id: workspaceRow
                 anchors.centerIn: parent
-                
+
                 Repeater {
                     model: Settings.workspaceCount // Number of workspaces
 
@@ -87,7 +88,17 @@ PanelWindow {
                                 easing.type: Easing.OutCubic
                             }
                         }
-                    }    //onClicked: Hyprland.dispatch("workspace", (index + 1).toString())
+
+                        MouseArea {
+                            // Cover the gaps between dots and the full bar height
+                            anchors.centerIn: parent
+                            width: parent.width + workspaceRow.spacing
+                            height: Settings.barHeight
+                            cursorShape: Qt.PointingHandCursor
+                            // Lua config only accepts Lua dispatchers, not the legacy "workspace N"
+                            onClicked: Hyprland.dispatch(`hl.dsp.focus({ workspace = ${index + 1} })`)
+                        }
+                    }
                 }
             }
 

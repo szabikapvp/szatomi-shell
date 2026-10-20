@@ -5,3 +5,4 @@
 - If a task needs a value that could count as a setting, add it as a new property in `config/Settings.qml` (grouped under a `// SECTION` comment).
 - Write short comments only for logic, not for UI.
 - Keep the project's design system and reuse existing components from `components/` (e.g. `Button`, `Icon`) and `utils/` (e.g. `Loading`) where it makes sense.
+- New singletons in `services/` must be registered in `services/qmldir` (keep a trailing newline). Quickshell only picks up `qmldir` changes after a full restart, not a hot reload.

@@ -53,9 +53,8 @@ PanelWindow {
     aboveWindows: true
 
     Shortcut {
-        sequence: "Escape"
-        // Step back to the main page before closing
-        onActivated: visiblePage != mainPage ? changePage(mainPage) : close()
+        sequences: Settings.backShortcuts
+        onActivated: back()
     }
 
     SequentialAnimation {
@@ -97,11 +96,10 @@ PanelWindow {
     Rectangle {
         id: osdRect
 
-        Keys.onEscapePressed: (event) => {
-            slideOut.restart()
-            showing = !showing
+        BackGesture {
+            onTriggered: back()
         }
-        
+
         height: visiblePage.height + (Settings.spacing * 4)
         width: panelWidth
         radius: Settings.radiusLg
@@ -126,10 +124,12 @@ PanelWindow {
             spacing: Settings.spacing
 
             RowLayout {
+                Layout.fillWidth: true
                 spacing: Settings.spacing
 
                 Button {
                     id: networkButton
+                    Layout.preferredWidth: 1
                     icon: Network.icon
                     text: Network.wifiStatus == "connected" ? Network.networkName : "Wi-Fi"
                     rightSide: true
@@ -141,8 +141,16 @@ PanelWindow {
                 }
 
                 Button {
-                    icon: "bluetooth-off"
-                    text: "Bluetooth"
+                    Layout.preferredWidth: 1
+                    icon: Bluetooth.icon
+                    text: Bluetooth.connectedDevice ? Bluetooth.connectedDevice.name : "Bluetooth"
+                    rightSide: true
+                    color: Bluetooth.connectedDevice ? Colors.primary : Colors.foreground
+                    disabled: !Bluetooth.available || Bluetooth.blocked
+
+                    onClicked: Bluetooth.toggle()
+
+                    onRightSideClicked: changePage(bluetoothPage)
                 }
             }
 
@@ -172,18 +180,42 @@ PanelWindow {
             
             onBack: changePage(mainPage)
         }
+
+        BluetoothPage {
+            id: bluetoothPage
+
+            visible: visiblePage == this
+
+            width: parent.width - (Settings.spacing * 4)
+
+            x: Settings.spacing * 2
+            y: Settings.spacing * 2
+
+            onBack: changePage(mainPage)
+        }
     }
 
     function changePage(page) {
         root.visiblePage = page
         
         if (page == networksPage) Network.rescanWifi()
+
+        // Discovery only runs while the Bluetooth page is open
+        if (page == bluetoothPage) Bluetooth.startScan()
+        else Bluetooth.stopScan()
+    }
+
+    // Step back to the main page before closing
+    function back() {
+        if (visiblePage != mainPage) changePage(mainPage)
+        else close()
     }
 
     function close() {
         if (showing && !slideIn.running && !slideOut.running) {
 
             if (root.activeFocusItem) root.activeFocusItem.focus = false
+            Bluetooth.stopScan()
             slideOut.restart()
             showing = !showing
         }   

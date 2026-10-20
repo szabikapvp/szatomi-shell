@@ -43,9 +43,9 @@ QtObject {
                 var pywal = JSON.parse(this.text());
                 
                 root.background = "#000000" /*pywal.special.background*/;
-                root.backgroundSubtle = Qt.lighter(root.background, 4)
-
                 root.foreground = "#eeeeee";
+                // lighter() can't brighten pure black, so tint with the foreground instead
+                root.backgroundSubtle = Qt.tint(root.background, Qt.alpha(root.foreground, 0.15))
                 root.foregroundHover = Qt.darker(root.foreground, root.hover);
                 root.foregroundActive = Qt.darker(root.foreground, root.active);
                 

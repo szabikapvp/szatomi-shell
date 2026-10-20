@@ -94,6 +94,7 @@ Item {
 
             x: spacing
             y: spacing
+            width: parent.width - (root.spacing * 2) - (root.rightSide ? 24 + root.spacing : 0)
 
             spacing: Settings.spacing * (size == "lg" ? 2 : 1)
 

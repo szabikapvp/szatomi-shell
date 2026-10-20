@@ -13,7 +13,7 @@ ColumnLayout {
 
     signal back()
 
-    height: Settings.wifiPageHeight
+    height: Settings.controlCenterPageHeight
     spacing: Settings.spacing * 2
 
     // Radio needs a moment to come up before a rescan succeeds

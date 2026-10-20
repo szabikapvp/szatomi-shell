@@ -25,6 +25,13 @@ QtObject {
     property string dateFormat: "MM/dd ddd"
     property string timeFormat: "h:mm"
 
+    // KEYBINDS
+
+    property list<string> backShortcuts: ["Escape"]
+    property int backSwipeThreshold: 120
+    property int backSwipeResetDelay: 300
+    property bool naturalScroll: true // match the compositor's touchpad setting
+
     // BAR
 
     property int barHeight: 44
@@ -40,6 +47,7 @@ QtObject {
 
     // CONTROL CENTER
 
-    property int wifiPageHeight: 500
+    property int controlCenterPageHeight: 500
     property int wifiRescanDelay: 1500
+    property int bluetoothScanDuration: 20000
 }
