@@ -51,7 +51,7 @@ Singleton {
     }
 
     function rescanWifi(): void {
-        if (wifiScanning) return
+        if (wifiScanning || !wifiEnabled) return
         wifiScanning = true;
         rescanProcess.running = true;
     }
@@ -107,8 +107,11 @@ Singleton {
             }
         }
         onExited: (exitCode, exitStatus) => {
-            root.wifiConnectTarget.askingPassword = (exitCode !== 0)
+            // Open networks can't need a password, so only secured ones ask for it on failure
+            if (root.wifiConnectTarget)
+                root.wifiConnectTarget.askingPassword = (exitCode !== 0 && root.wifiConnectTarget.isSecure)
             root.wifiConnectTarget = null
+            getNetworks.running = true
         }
     }
 
@@ -122,11 +125,10 @@ Singleton {
     Process {
         id: rescanProcess
         command: ["nmcli", "dev", "wifi", "list", "--rescan", "yes"]
-        stdout: SplitParser {
-            onRead: {
-                wifiScanning = false;
-                getNetworks.running = true;
-            }
+        // Reset on exit, so a failed or empty scan can't leave it stuck
+        onExited: {
+            wifiScanning = false;
+            getNetworks.running = true;
         }
     }
 

@@ -10,7 +10,7 @@ QtObject {
     property string wallpaper: ""
 
     property int fontSize: 16
-    property string fontFamily: "Bricolage Grotesque"
+    property string fontFamily: "Space Grotesk"
     property string headerFont: "Dela Gothic One"
 
     property int windowSpacing: 8
@@ -19,6 +19,8 @@ QtObject {
     property int radiusSm: 8
     property int radiusMd: 16
     property int radiusLg: 32
+
+    property int spinnerSize: 24
 
     property string dateFormat: "MM/dd ddd"
     property string timeFormat: "h:mm"
@@ -31,9 +33,13 @@ QtObject {
     property int workspaceCount: 9
 
     // OSD
-    
 
     property int osdYPosition: barPosition == "bottom"
         ? barHeight + (windowSpacing * 2)
         : windowSpacing * 2
+
+    // CONTROL CENTER
+
+    property int wifiPageHeight: 500
+    property int wifiRescanDelay: 1500
 }

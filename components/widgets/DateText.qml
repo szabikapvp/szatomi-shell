@@ -14,6 +14,7 @@ Text {
     color: Colors.text
     font.pixelSize: Settings.fontSize
     font.family: Settings.fontFamily
+    font.weight: 500
 
     Timer {
         interval: 1000

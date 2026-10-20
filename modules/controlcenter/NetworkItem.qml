@@ -5,6 +5,7 @@ import QtQuick.Controls
 import qs.services
 import qs.services.network
 import qs.config
+import qs.utils
 import "../../components"
 import "../../components/widgets"
 
@@ -14,24 +15,51 @@ Item {
 
     Layout.preferredWidth: 400
     Layout.fillWidth: true
-    
+
     property string type: "ghost"
-    property string size: "md" 
+    property string size: "md"
     property string color: Colors.foreground
     property string textColor: Colors.text
-    
+
     property int radius: Settings.radiusMd
     property bool disabled: false
+
+    property bool expanded: false
+    property bool wrongPassword: false
+    readonly property bool connecting: Network.wifiConnectTarget === conn
 
     implicitHeight: buttonRect.height
 
     signal rightSideClicked()
 
+    // Open the password field when nmcli asks for secrets, flag it if a password was already tried
+    Connections {
+        target: root.conn
+
+        function onAskingPasswordChanged() {
+            if (!root.conn.askingPassword) return
+            root.expanded = true
+        }
+
+        function onActiveChanged() {
+            root.expanded = false
+            root.wrongPassword = false
+        }
+    }
+
+    function submitPassword() {
+        if (passwordField.text.length === 0) return
+        wrongPassword = true
+        Network.changePassword(conn, passwordField.text)
+        passwordField.text = ""
+        expanded = false
+    }
+
     Rectangle {
         id: buttonRect
-        
-        width: parent.width 
-        
+
+        width: parent.width
+
         height: info.implicitHeight + (Settings.spacing * 2)
 
         color: {
@@ -45,7 +73,7 @@ Item {
 
                 case "ghost":
                     if (disabled) return "transparent"
-                    if (mouseArea.containsMouse) {
+                    if (mouseArea.containsMouse || expanded) {
                         if (mouseArea.pressed) return Qt.alpha(root.color, 0.2)
                         else return Qt.alpha(root.color, 0.1)
                     } else return "transparent"
@@ -61,42 +89,41 @@ Item {
             }
         }
 
+        // Only the header row toggles, so clicks around the password field don't collapse it
         MouseArea {
             id: mouseArea
-            
-            anchors.fill: buttonRect 
-            
-            enabled: !disabled
+
+            width: parent.width
+            height: header.implicitHeight + (Settings.spacing * 2)
+
+            enabled: !disabled && !connecting
             hoverEnabled: true
-            
-            cursorShape: disabled ? Qt.ArrowCursor : Qt.PointingHandCursor
-            
+
+            cursorShape: (disabled || connecting) ? Qt.ArrowCursor : Qt.PointingHandCursor
+
             onClicked: (mouse) => {
-                if (conn.askingPassword && !inputPanel.visible) {
-                    inputPanel.visible = true
-                } else if (inputPanel.visible) {
-                    inputPanel.visible = false
-                }else {
-                    Network.connectToWifiNetwork(conn)
-                }
+                if (expanded) expanded = false
+                else if (conn.active || conn.askingPassword) expanded = true
+                else Network.connectToWifiNetwork(conn)
             }
         }
-    
+
         ColumnLayout {
             id: info
 
             x: Settings.spacing
             y: Settings.spacing
-            
-            width: parent.width - (Settings.spacing * 2) 
+
+            width: parent.width - (Settings.spacing * 2)
             spacing: Settings.spacing
 
             RowLayout {
+                id: header
                 Layout.fillWidth: true
                 spacing: Settings.spacing * (size == "lg" ? 2 : 1)
 
                 Icon {
-                    icon: conn.strength > 80 
+                    icon: conn.strength > 80
                         ? "wifi-4" :
                         conn.strength > 60 ? "wifi-3" :
                         conn.strength > 40 ? "wifi-2" :
@@ -106,24 +133,47 @@ Item {
                     color: disabled ? Qt.darker(textColor, 1.8) : textColor
                 }
 
-                Text {
-                    text: conn.ssid
-                    color: disabled ? Qt.darker(textColor, 1.8) : textColor
-                    font.pixelSize: Settings.fontSize
-                    font.family: Settings.fontFamily
-                    font.bold: conn.active
-                    
+                ColumnLayout {
                     Layout.fillWidth: true
-                    elide: Text.ElideRight
-                    wrapMode: Text.NoWrap
+                    spacing: 0
+
+                    Text {
+                        text: conn.ssid
+                        color: disabled ? Qt.darker(textColor, 1.8) : textColor
+                        font.pixelSize: Settings.fontSize
+                        font.family: Settings.fontFamily
+                        font.bold: conn.active
+
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
+                        wrapMode: Text.NoWrap
+                    }
+
+                    Text {
+                        text: {
+                            if (connecting) return "Connecting..."
+                            if (conn.active) return Network.wifiStatus === "limited" ? "Connected, no internet" : "Connected"
+                            if (conn.askingPassword && wrongPassword) return "Wrong password"
+                            return conn.isSecure ? conn.security : "Open"
+                        }
+                        color: (conn.askingPassword && wrongPassword) ? Colors.primary : Qt.darker(textColor, 1.8)
+                        font.pixelSize: Settings.fontSize - 4
+                        font.family: Settings.fontFamily
+
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
+                        wrapMode: Text.NoWrap
+                    }
                 }
+
+                Loading { visible: connecting }
             }
 
             RowLayout {
                 id: inputPanel
                 Layout.fillWidth: true
-                
-                visible: false 
+
+                visible: expanded && !conn.active
 
                 TextField {
                     id: passwordField
@@ -142,6 +192,8 @@ Item {
                         if (visible) forceActiveFocus()
                     }
 
+                    onAccepted: submitPassword()
+
                     background: Rectangle {
                         color: Qt.lighter(Colors.background, 1.8)
                         radius: Settings.radiusSm
@@ -153,11 +205,20 @@ Item {
                     Layout.fillWidth: false
                     text: "Connect"
                     icon: ""
+                    disabled: passwordField.text.length === 0
 
-                    onClicked: () => {
-                        Network.changePassword(conn, passwordField.text)
-                    }
+                    onClicked: submitPassword()
                 }
+            }
+
+            Button {
+                visible: expanded && conn.active
+                size: "sm"
+                Layout.fillWidth: false
+                text: "Disconnect"
+                icon: ""
+
+                onClicked: Network.disconnectWifiNetwork()
             }
         }
     }

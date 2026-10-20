@@ -54,7 +54,8 @@ PanelWindow {
 
     Shortcut {
         sequence: "Escape"
-        onActivated: close()
+        // Step back to the main page before closing
+        onActivated: visiblePage != mainPage ? changePage(mainPage) : close()
     }
 
     SequentialAnimation {
@@ -159,153 +160,17 @@ PanelWindow {
             }
         }
 
-        ColumnLayout {
+        WifiPage {
             id: networksPage
 
             visible: visiblePage == this
             
             width: parent.width - (Settings.spacing * 4)
-            height: 500
 
             x: Settings.spacing * 2
             y: Settings.spacing * 2
             
-            spacing: Settings.spacing * 2
-
-            RowLayout {
-
-                Layout.preferredWidth: parent.width
-                
-                width: parent.width                 
-                spacing: Settings.spacing
-
-                Button {
-                    icon: "arrow-left"
-                    iconOnly: true
-                    size: "md"
-                    type: "ghost"
-                    textColor: Colors.text
-                    Layout.fillWidth: false
-
-                    onClicked: changePage(mainPage)
-                }
-
-                Text {
-                    text: "Wi-Fi"
-                    color: Colors.text
-                    font.pixelSize: 24
-                    font.family: Settings.fontFamily
-                    font.weight: 900
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 48
-                    verticalAlignment: Text.AlignVCenter
-                }
-
-                Loading { visible: Network.wifiScanning }
-
-                Button {
-                    disabled: Network.wifiScanning
-                    icon: "reload"
-                    iconOnly: true
-                    size: "md"
-                    type: "ghost"
-                    textColor: Colors.text
-                    Layout.fillWidth: false
-
-                    onClicked: Network.rescanWifi()
-                }
-            }
-
-            Rectangle {
-                width: parent.width
-                height: 1
-                color: Colors.backgroundSubtle
-            }
-
-            ScrollView {
-                id: scrollView
-
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-
-                clip: true
-                contentWidth: availableWidth
-                contentHeight: networkList.implicitHeight
-
-                ScrollBar.vertical: ScrollBar {
-                    id: vBar
-                    
-                    visible: size < 1.0
-
-                    policy: ScrollBar.AsNeeded
-                    anchors.right: parent.right
-
-                    background: Rectangle {
-                        implicitWidth: 6
-                        implicitHeight: scrollView.height
-                        color: "transparent" 
-                    }
-
-                    contentItem: Rectangle {
-                        implicitWidth: 4
-                        radius: 3
-                        
-                        color: {
-                            if (vBar.pressed) return Colors.primaryActive 
-                            if (vBar.hovered) return Colors.primaryHover
-                            return Qt.alpha(Colors.foreground, 0.5)
-                        }
-                    }
-                }
-
-                ColumnLayout {
-                    id: networkList
-
-                    width: scrollView.availableWidth
-
-                    Button {
-                        Layout.fillWidth: true
-                        visible: Network.wifiStatus === "connected"
-                        icon: Network.icon
-                        text: Network.networkName
-                        onClicked: Network.disconnectWifiNetwork()
-                    } 
-
-                    Repeater {
-                        model: Network.wifiNetworks
-                        required property var modelData
-
-                        NetworkItem {
-                            conn: modelData
-                            visible: Network.wifiEnabled && conn.ssid != Network.networkName
-                        }
-                    }
-
-                    Text {
-                        visible: !Network.wifiEnabled
-                        
-                        text: {
-                            if (!Network.wifiEnabled) return "Wi-Fi is turned off"
-                            else if (Network.wifiScanning) return "Scanning..."
-                            return ""
-                        }
-
-                        color: Colors.text
-                        font.pixelSize: Settings.fontSize
-                        font.family: Settings.fontFamily
-                        font.weight: 300
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 64
-                        verticalAlignment: Text.AlignVCenter
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-
-                    Loading {
-                        visible: !Network.wifiEnabled
-                        Layout.fillWidth: true
-                    }
-                }
-            }
+            onBack: changePage(mainPage)
         }
     }
 

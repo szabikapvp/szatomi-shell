@@ -44,8 +44,8 @@ PanelWindow {
 
             anchors.fill: parent
             anchors.margins: Settings.spacing
-            anchors.leftMargin: Settings.spacing * 2
-            anchors.rightMargin: Settings.spacing * 2
+            anchors.leftMargin: Settings.spacing
+            anchors.rightMargin: Settings.spacing
 
             // LEFT
             RowLayout {
@@ -75,7 +75,7 @@ PanelWindow {
                         Layout.preferredWidth: isActive ? 30 :10
                         Layout.preferredHeight: 10
                         radius: 5
-                        color: isActive ? Colors.text : (ws ? Qt.alpha(Colors.text, 0.5) : Qt.alpha(Colors.text, 0.2))
+                        color: isActive ? Colors.primary : (ws ? Colors.text : Qt.alpha(Colors.text, 0.2))
 
                         Behavior on Layout.preferredWidth {
                             NumberAnimation { duration: 100 }
