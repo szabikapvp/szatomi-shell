@@ -116,7 +116,10 @@ ColumnLayout {
             width: scrollView.availableWidth
 
             Repeater {
-                model: Bluetooth.enabled ? Bluetooth.devices : []
+                // Diffs each new array, so unchanged devices keep their delegates instead of being rebuilt
+                model: ScriptModel {
+                    values: Bluetooth.enabled ? Bluetooth.devices : []
+                }
 
                 BluetoothItem {
                     required property var modelData

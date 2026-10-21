@@ -156,87 +156,95 @@ PanelWindow {
             border.width: 1
             border.color: Colors.backgroundSubtle
 
-            ColumnLayout {
-                id: mainPage
+            // Pages stay at the panel's corner while a resize animates
+            Item {
+                x: panel.contentX
+                y: panel.contentY
+                width: panel.width
+                height: panel.height
 
-                visible: root.visiblePage == this
+                ColumnLayout {
+                    id: mainPage
 
-                width: parent.width - (Settings.spacing * 4)
+                    visible: root.visiblePage == this
+
+                    width: parent.width - (Settings.spacing * 4)
             
-                x: Settings.spacing * 2
-                y: Settings.spacing * 2
+                    x: Settings.spacing * 2
+                    y: Settings.spacing * 2
 
-                spacing: Settings.spacing
-
-                RowLayout {
-                    Layout.fillWidth: true
                     spacing: Settings.spacing
 
-                    Button {
-                        id: networkButton
-                        Layout.preferredWidth: 1
-                        icon: Network.icon
-                        text: Network.wifiStatus == "connected" ? Network.networkName : "Wi-Fi"
-                        rightSide: true
-                        color: Network.wifiStatus == "connected" ? Colors.primary : Colors.foreground
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Settings.spacing
 
-                        onClicked: Network.toggleWifi()
+                        Button {
+                            id: networkButton
+                            Layout.preferredWidth: 1
+                            icon: Network.icon
+                            text: Network.wifiStatus == "connected" ? Network.networkName : "Wi-Fi"
+                            rightSide: true
+                            color: Network.wifiStatus == "connected" ? Colors.primary : Colors.foreground
 
-                        onRightSideClicked: changePage(networksPage)
+                            onClicked: Network.toggleWifi()
+
+                            onRightSideClicked: changePage(networksPage)
+                        }
+
+                        Button {
+                            Layout.preferredWidth: 1
+                            icon: Bluetooth.icon
+                            text: Bluetooth.connectedDevice ? Bluetooth.connectedDevice.name : "Bluetooth"
+                            rightSide: true
+                            color: Bluetooth.connectedDevice ? Colors.primary : Colors.foreground
+                            disabled: !Bluetooth.available || Bluetooth.blocked
+
+                            onClicked: Bluetooth.toggle()
+
+                            onRightSideClicked: changePage(bluetoothPage)
+                        }
                     }
 
                     Button {
-                        Layout.preferredWidth: 1
-                        icon: Bluetooth.icon
-                        text: Bluetooth.connectedDevice ? Bluetooth.connectedDevice.name : "Bluetooth"
-                        rightSide: true
-                        color: Bluetooth.connectedDevice ? Colors.primary : Colors.foreground
-                        disabled: !Bluetooth.available || Bluetooth.blocked
-
-                        onClicked: Bluetooth.toggle()
-
-                        onRightSideClicked: changePage(bluetoothPage)
+                        Layout.preferredWidth: parent.width
+                        icon: "notifications-off"
+                        text: "Notifications"
+                        disabled: true
                     }
-                }
-
-                Button {
-                    Layout.preferredWidth: parent.width
-                    icon: "notifications-off"
-                    text: "Notifications"
-                    disabled: true
-                }
         
-                Button {
-                    Layout.preferredWidth: parent.width
-                    icon: "settings"
-                    text: "Settings"
+                    Button {
+                        Layout.preferredWidth: parent.width
+                        icon: "settings"
+                        text: "Settings"
+                    }
                 }
-            }
 
-            WifiPage {
-                id: networksPage
+                WifiPage {
+                    id: networksPage
 
-                visible: visiblePage == this
+                    visible: visiblePage == this
             
-                width: parent.width - (Settings.spacing * 4)
+                    width: parent.width - (Settings.spacing * 4)
 
-                x: Settings.spacing * 2
-                y: Settings.spacing * 2
+                    x: Settings.spacing * 2
+                    y: Settings.spacing * 2
             
-                onBack: changePage(mainPage)
-            }
+                    onBack: changePage(mainPage)
+                }
 
-            BluetoothPage {
-                id: bluetoothPage
+                BluetoothPage {
+                    id: bluetoothPage
 
-                visible: visiblePage == this
+                    visible: visiblePage == this
 
-                width: parent.width - (Settings.spacing * 4)
+                    width: parent.width - (Settings.spacing * 4)
 
-                x: Settings.spacing * 2
-                y: Settings.spacing * 2
+                    x: Settings.spacing * 2
+                    y: Settings.spacing * 2
 
-                onBack: changePage(mainPage)
+                    onBack: changePage(mainPage)
+                }
             }
         }
     }

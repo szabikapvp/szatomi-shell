@@ -1,5 +1,4 @@
 import QtQuick
-import Qt5Compat.GraphicalEffects
 
 import qs.config
 
@@ -31,10 +30,24 @@ Item {
         NumberAnimation { duration: Settings.resizeDuration; easing.type: Easing.OutCubic }
     }
 
-    // While shrinking the content keeps the larger size, so it collapses with the mask instead of vanishing.
+    // While shrinking the content holds its larger size until the mask is done, so it collapses with the mask
+    // instead of vanishing, and isn't laid out again every frame.
     // Windows sized to their content should bind to these, so the surface doesn't cut the animation short
-    readonly property real visibleWidth: Math.max(width, shownWidth)
-    readonly property real visibleHeight: Math.max(height, shownHeight)
+    property real heldWidth: width
+    property real heldHeight: height
+    onWidthChanged: heldWidth = Math.max(width, shownWidth)
+    onHeightChanged: heldHeight = Math.max(height, shownHeight)
+
+    readonly property real visibleWidth: shownWidth == width ? width : Math.max(width, heldWidth)
+    readonly property real visibleHeight: shownHeight == height ? height : Math.max(height, heldHeight)
+
+    // Where the real size sits inside the content, at the origin corner. Place the actual contents here,
+    // so they don't jump when a held size is released
+    readonly property real contentX: fromRight ? visibleWidth - width : 0
+    readonly property real contentY: fromBottom ? visibleHeight - height : 0
+
+    // Only mask while animating, so the content renders natively at rest
+    readonly property bool masking: progress < 1 || shownWidth != width || shownHeight != height
 
     Item {
         id: inner
@@ -43,38 +56,40 @@ Item {
         height: root.visibleHeight
         x: root.fromRight ? root.width - width : 0
         y: root.fromBottom ? root.height - height : 0
-
-        // Only mask while animating, so the content renders natively at rest
-        layer.enabled: root.progress < 1 || root.shownWidth != root.width || root.shownHeight != root.height
-        layer.effect: OpacityMask {
-            maskSource: mask
-        }
     }
 
-    Item {
-        id: mask
+    // Kept alive instead of a toggled layer.effect, which rebuilds the effect at the start of every animation
+    ShaderEffectSource {
+        id: contentSource
 
+        sourceItem: inner
+        hideSource: root.masking
+        live: root.masking && root.progress > 0
+        visible: false
+    }
+
+    ShaderEffect {
         x: inner.x
         y: inner.y
         width: inner.width
         height: inner.height
-        visible: false
-        layer.enabled: true
+        visible: root.masking
 
-        Rectangle {
-            width: root.shownWidth * root.progress
-            height: root.shownHeight * root.progress
-            x: root.fromRight ? mask.width - width : 0
-            y: root.fromBottom ? mask.height - height : 0
-            radius: root.radius
-            antialiasing: true
+        readonly property real maskWidth: root.shownWidth * root.progress
+        readonly property real maskHeight: root.shownHeight * root.progress
 
-            // The origin corner sits on the content's own corner, so leave its rounding to the content
-            topLeftRadius: !root.fromRight && !root.fromBottom ? 0 : root.radius
-            topRightRadius: root.fromRight && !root.fromBottom ? 0 : root.radius
-            bottomLeftRadius: !root.fromRight && root.fromBottom ? 0 : root.radius
-            bottomRightRadius: root.fromRight && root.fromBottom ? 0 : root.radius
-        }
+        property var source: contentSource
+        property size itemSize: Qt.size(width, height)
+        property vector4d maskRect: Qt.vector4d(root.fromRight ? width - maskWidth : 0, root.fromBottom ? height - maskHeight : 0, maskWidth, maskHeight)
+
+        // The origin corner sits on the content's own corner, so leave its rounding to the content
+        property vector4d radii: Qt.vector4d(
+            !root.fromRight && !root.fromBottom ? 0 : root.radius,
+            root.fromRight && !root.fromBottom ? 0 : root.radius,
+            root.fromRight && root.fromBottom ? 0 : root.radius,
+            !root.fromRight && root.fromBottom ? 0 : root.radius)
+
+        fragmentShader: Qt.resolvedUrl("shaders/popmask.frag.qsb")
     }
 
     NumberAnimation {

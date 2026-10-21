@@ -131,7 +131,10 @@ ColumnLayout {
             }
 
             Repeater {
-                model: Network.wifiNetworks
+                // Diffs each list change, so unchanged networks keep their delegates instead of being rebuilt
+                model: ScriptModel {
+                    values: [...Network.wifiNetworks]
+                }
 
                 NetworkItem {
                     required property var modelData
