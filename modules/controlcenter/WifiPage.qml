@@ -16,6 +16,8 @@ ColumnLayout {
     height: Settings.controlCenterPageHeight
     spacing: Settings.spacing * 2
 
+    Component.onCompleted: Network.rescanWifi()
+
     // Radio needs a moment to come up before a rescan succeeds
     Timer {
         id: rescanDelay
@@ -30,34 +32,9 @@ ColumnLayout {
         }
     }
 
-    RowLayout {
-
-        Layout.preferredWidth: parent.width
-
-        width: parent.width
-        spacing: Settings.spacing
-
-        Button {
-            icon: "arrow-left"
-            iconOnly: true
-            size: "md"
-            type: "ghost"
-            textColor: Colors.text
-            Layout.fillWidth: false
-
-            onClicked: root.back()
-        }
-
-        Text {
-            text: "Wi-Fi"
-            color: Colors.text
-            font.pixelSize: 24
-            font.family: Settings.fontFamily
-            font.weight: 900
-            Layout.fillWidth: true
-            Layout.preferredHeight: 48
-            verticalAlignment: Text.AlignVCenter
-        }
+    PageHeader {
+        title: "Wi-Fi"
+        onBack: root.back()
 
         Loading { visible: Network.wifiScanning && Network.wifiNetworks.length > 0 }
 

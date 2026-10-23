@@ -61,6 +61,7 @@ QtObject {
 
     property string dateFormat: "MM/dd ddd"
     property string timeFormat: "h:mm"
+    property string longDateFormat: "dddd, MMMM d"
 
     // KEYBINDS
 
@@ -84,7 +85,29 @@ QtObject {
 
     // CONTROL CENTER
 
+    property int controlCenterColumns: 4
+    property int controlCenterMaxRows: 6
+    // Rows fit a large button with room around it, so the grid follows the font size
+    property int controlCenterCellSize: buttonHeight.lg + spacing * 3
+    property int controlCenterPadding: spacing * 4
+    property int controlCenterHoldDuration: 500
     property int controlCenterPageHeight: 500
     property int wifiRescanDelay: 1500
     property int bluetoothScanDuration: 20000
+
+    // SLIDERS
+
+    property int sliderScrollStep: 5
+    property int brightnessMin: 5 // 0% turns some backlights fully off
+
+    // POWER
+
+    property int powerConfirmTimeout: 3000
+    property var powerCommands: ({
+        lock: ["hyprlock"],
+        sleep: ["systemctl", "suspend"],
+        logout: ["hyprctl", "dispatch", "hl.dsp.exit()"],
+        restart: ["systemctl", "reboot"],
+        shutdown: ["systemctl", "poweroff"]
+    })
 }

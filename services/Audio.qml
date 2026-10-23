@@ -16,7 +16,18 @@ Singleton {
     property int level: Pipewire.defaultAudioSink?.audio.volume != null 
         ? Math.round(Pipewire.defaultAudioSink.audio.volume * 100) : 0
 
+    readonly property string icon: {
+        if (isMuted) return "volume-mute"
+        if (level < 20) return "volume-0"
+        if (level < 50) return "volume-1"
+        return "volume-2"
+    }
+
     function getLevel() {
         return level
+    }
+
+    function setLevel(value) {
+        if (Pipewire.defaultAudioSink?.audio) Pipewire.defaultAudioSink.audio.volume = Math.max(0, Math.min(100, value)) / 100
     }
 }

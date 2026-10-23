@@ -12,10 +12,6 @@ Item {
     Layout.alignment: Qt.AlignVCenter
 
     Icon {
-        icon: {
-            if (Brightness.getLevel() <= 30) return "brightness-1"
-            if (Brightness.getLevel() <= 60) return "brightness-2"
-            return "brightness-3"
-        }
+        icon: Brightness.icon
     }
 }

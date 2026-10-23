@@ -15,12 +15,21 @@ import qs.utils
 PanelWindow {
     id: root
     
-    property int panelWidth: 480
+    property int panelWidth: grid.implicitWidth + panelPadding * 2
+    property int panelPadding: Settings.controlCenterPadding
     property int marginSize: Settings.windowSpacing
 
-    property var visiblePage: mainPage
+    // The grid, or a page opened from it
+    property Item visiblePage: pageLoader.item ?? mainPage
     property bool showing: false
     visible: panel.progress > 0
+
+    // Pages and editing end once the panel is fully hidden, so nothing changes mid animation
+    onVisibleChanged: {
+        if (visible) return
+        pageLoader.source = ""
+        grid.editing = false
+    }
 
     // Resting position for the remembered corner
     property real cornerX: panelState.right ? panel.parent.width - panel.width - marginSize : marginSize
@@ -45,6 +54,7 @@ PanelWindow {
             id: panelState
             property bool right: true
             property bool bottom: true
+            property var widgets: null
         }
     }
 
@@ -104,7 +114,7 @@ PanelWindow {
         x: cornerX
         y: cornerY
         width: panelWidth
-        height: visiblePage.height + (Settings.spacing * 8)
+        height: visiblePage.height + panelPadding * 2
 
         fromRight: panelState.right
         fromBottom: panelState.bottom
@@ -128,6 +138,10 @@ PanelWindow {
                 drag.maximumX: panel.parent.width - panel.width
                 drag.maximumY: panel.parent.height - panel.height
                 cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+                pressAndHoldInterval: Settings.controlCenterHoldDuration
+
+                // Holding still on empty space edits the grid, same as holding a widget
+                onPressAndHold: if (!pageLoader.item) grid.editing = true
 
                 // Dragging moves the panel from C++, which leaves the corner bindings alive.
                 // Break them here, or changing the corner on release jumps the panel there
@@ -147,7 +161,7 @@ PanelWindow {
 
             // The small corner faces the screen corner
             radius: Settings.radiusLg
-            property int calculatedRadius: Settings.buttonHeight.lg / 2 + Settings.spacing * 4
+            property int calculatedRadius: Settings.radiusLg + panelPadding
             topLeftRadius: !panelState.right && !panelState.bottom ? Settings.radiusSm : calculatedRadius
             topRightRadius: panelState.right && !panelState.bottom ? Settings.radiusSm : calculatedRadius
             bottomLeftRadius: !panelState.right && panelState.bottom ? Settings.radiusSm : calculatedRadius
@@ -169,100 +183,76 @@ PanelWindow {
 
                     visible: root.visiblePage == this
 
-                    width: parent.width - (Settings.spacing * 8)
-            
-                    x: Settings.spacing * 4
-                    y: Settings.spacing * 4
+                    x: panelPadding
+                    y: panelPadding
+                    width: parent.width - panelPadding * 2
 
-                    spacing: Settings.spacing
+                    spacing: Settings.spacing * 2
 
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: Settings.spacing
+                    PageHeader {
+                        visible: grid.editing
+                        title: "Edit layout"
+                        showBack: false
 
                         Button {
-                            id: networkButton
-                            Layout.preferredWidth: 1
-                            icon: Network.icon
-                            text: Network.wifiStatus == "connected" ? Network.networkName : "Wi-Fi"
-                            rightSide: true
-                            color: Network.wifiStatus == "connected" ? Colors.primary : Colors.foreground
+                            icon: "add"
+                            iconOnly: true
+                            size: "md"
+                            type: "ghost"
+                            textColor: Colors.text
+                            Layout.fillWidth: false
 
-                            onClicked: Network.toggleWifi()
-
-                            onRightSideClicked: changePage(networksPage)
+                            onClicked: openPage(Qt.resolvedUrl("WidgetPicker.qml"), { grid: grid })
                         }
 
                         Button {
-                            Layout.preferredWidth: 1
-                            icon: Bluetooth.icon
-                            text: Bluetooth.connectedDevice ? Bluetooth.connectedDevice.name : "Bluetooth"
-                            rightSide: true
-                            color: Bluetooth.connectedDevice ? Colors.primary : Colors.foreground
-                            disabled: !Bluetooth.available || Bluetooth.blocked
+                            icon: "check"
+                            iconOnly: true
+                            size: "md"
+                            type: "ghost"
+                            textColor: Colors.text
+                            Layout.fillWidth: false
 
-                            onClicked: Bluetooth.toggle()
-
-                            onRightSideClicked: changePage(bluetoothPage)
+                            onClicked: grid.editing = false
                         }
                     }
 
-                    Button {
-                        Layout.preferredWidth: parent.width
-                        icon: "notifications"
-                        text: "Notifications"
-                        disabled: true
-                    }
-        
-                    Button {
-                        Layout.preferredWidth: parent.width
-                        icon: "settings"
-                        text: "Settings"
+                    WidgetGrid {
+                        id: grid
+                        store: panelState
+
+                        onPageRequested: (page) => openPage(page)
                     }
                 }
 
-                WifiPage {
-                    id: networksPage
+                // Pages size themselves to this width, the panel follows their height
+                Loader {
+                    id: pageLoader
 
-                    visible: visiblePage == this
-            
-                    width: parent.width - (Settings.spacing * 8)
-
-                    x: Settings.spacing * 4
-                    y: Settings.spacing * 4
-            
-                    onBack: changePage(mainPage)
+                    x: panelPadding
+                    y: panelPadding
+                    width: parent.width - panelPadding * 2
                 }
 
-                BluetoothPage {
-                    id: bluetoothPage
+                Connections {
+                    target: pageLoader.item
+                    ignoreUnknownSignals: true
 
-                    visible: visiblePage == this
-
-                    width: parent.width - (Settings.spacing * 8)
-
-                    x: Settings.spacing * 4
-                    y: Settings.spacing * 4
-
-                    onBack: changePage(mainPage)
+                    function onBack() { root.back() }
+                    function onCloseRequested() { root.close() }
                 }
             }
         }
     }
 
-    function changePage(page) {
-        root.visiblePage = page
-        
-        if (page == networksPage) Network.rescanWifi()
-
-        // Discovery only runs while the Bluetooth page is open
-        if (page == bluetoothPage) Bluetooth.startScan()
-        else Bluetooth.stopScan()
+    function openPage(page, properties = {}) {
+        pageLoader.setSource(page, properties)
     }
 
-    // Step back to the main page before closing
+    // Steps back from a page, then out of editing, then closes
     function back() {
-        if (visiblePage != mainPage) changePage(mainPage)
+        if (pageLoader.item) pageLoader.source = ""
+        else if (grid.editing) grid.editing = false
         else close()
     }
 
@@ -270,7 +260,6 @@ PanelWindow {
         if (showing && !panel.running) {
 
             if (root.activeFocusItem) root.activeFocusItem.focus = false
-            Bluetooth.stopScan()
             panel.popOut()
             showing = !showing
         }
@@ -279,11 +268,9 @@ PanelWindow {
     function open() {
         if (!showing && !panel.running) {
             panel.popIn()
-            root.visiblePage = mainPage
             showing = !showing
         }
     }
-
     function toggle() {
         if (showing) close()
         else open()

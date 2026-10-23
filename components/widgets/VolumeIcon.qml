@@ -12,11 +12,6 @@ Item {
     Layout.alignment: Qt.AlignVCenter
 
     Icon {
-        icon: {
-            if (Audio.isMuted) return "volume-mute"
-            if (Audio.getLevel() < 20) return "volume-0"
-            if (Audio.getLevel() < 50) return "volume-1"
-            return "volume-2"
-        }
+        icon: Audio.icon
     }
 }

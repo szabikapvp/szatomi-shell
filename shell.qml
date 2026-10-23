@@ -37,11 +37,13 @@ ShellRoot {
     SliderPopup {
         icon: BrightnessIcon {}
         prop: Brightness.getLevel()
+        suppressed: controlCenter.showing
     }
 
     SliderPopup {
         icon: VolumeIcon {}
         prop: Audio.getLevel()
+        suppressed: controlCenter.showing
     }
 
     ControlCenter { id: controlCenter }

@@ -15,6 +15,8 @@ PanelWindow {
     property int bottom: Settings.osdYPosition
 
     property int prop: 0
+    // Set while something else already shows the value
+    property bool suppressed: false
     property Component icon: VolumeIcon {}
 
     anchors.bottom: true
@@ -31,7 +33,7 @@ PanelWindow {
     color: "transparent"
 
     onPropChanged: {
-        ping()
+        if (!suppressed) ping()
     }
 
     NumberAnimation {
