@@ -90,31 +90,7 @@ ColumnLayout {
         contentWidth: availableWidth
         contentHeight: networkList.implicitHeight
 
-        ScrollBar.vertical: ScrollBar {
-            id: vBar
-
-            visible: size < 1.0
-
-            policy: ScrollBar.AsNeeded
-            anchors.right: parent.right
-
-            background: Rectangle {
-                implicitWidth: 6
-                implicitHeight: scrollView.height
-                color: "transparent"
-            }
-
-            contentItem: Rectangle {
-                implicitWidth: 4
-                radius: 3
-
-                color: {
-                    if (vBar.pressed) return Colors.primaryActive
-                    if (vBar.hovered) return Colors.primaryHover
-                    return Qt.alpha(Colors.foreground, 0.5)
-                }
-            }
-        }
+        ScrollBar.vertical: StyledScrollBar {}
 
         ColumnLayout {
             id: networkList

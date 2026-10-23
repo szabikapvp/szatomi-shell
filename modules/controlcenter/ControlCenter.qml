@@ -104,7 +104,7 @@ PanelWindow {
         x: cornerX
         y: cornerY
         width: panelWidth
-        height: visiblePage.height + (Settings.spacing * 4)
+        height: visiblePage.height + (Settings.spacing * 8)
 
         fromRight: panelState.right
         fromBottom: panelState.bottom
@@ -147,10 +147,11 @@ PanelWindow {
 
             // The small corner faces the screen corner
             radius: Settings.radiusLg
-            topLeftRadius: !panelState.right && !panelState.bottom ? Settings.radiusSm : Settings.radiusLg
-            topRightRadius: panelState.right && !panelState.bottom ? Settings.radiusSm : Settings.radiusLg
-            bottomLeftRadius: !panelState.right && panelState.bottom ? Settings.radiusSm : Settings.radiusLg
-            bottomRightRadius: panelState.right && panelState.bottom ? Settings.radiusSm : Settings.radiusLg
+            property int calculatedRadius: Settings.buttonHeight.lg / 2 + Settings.spacing * 4
+            topLeftRadius: !panelState.right && !panelState.bottom ? Settings.radiusSm : calculatedRadius
+            topRightRadius: panelState.right && !panelState.bottom ? Settings.radiusSm : calculatedRadius
+            bottomLeftRadius: !panelState.right && panelState.bottom ? Settings.radiusSm : calculatedRadius
+            bottomRightRadius: panelState.right && panelState.bottom ? Settings.radiusSm : calculatedRadius
 
             color: Colors.background
             border.width: 1
@@ -168,10 +169,10 @@ PanelWindow {
 
                     visible: root.visiblePage == this
 
-                    width: parent.width - (Settings.spacing * 4)
+                    width: parent.width - (Settings.spacing * 8)
             
-                    x: Settings.spacing * 2
-                    y: Settings.spacing * 2
+                    x: Settings.spacing * 4
+                    y: Settings.spacing * 4
 
                     spacing: Settings.spacing
 
@@ -208,7 +209,7 @@ PanelWindow {
 
                     Button {
                         Layout.preferredWidth: parent.width
-                        icon: "notifications-off"
+                        icon: "notifications"
                         text: "Notifications"
                         disabled: true
                     }
@@ -225,10 +226,10 @@ PanelWindow {
 
                     visible: visiblePage == this
             
-                    width: parent.width - (Settings.spacing * 4)
+                    width: parent.width - (Settings.spacing * 8)
 
-                    x: Settings.spacing * 2
-                    y: Settings.spacing * 2
+                    x: Settings.spacing * 4
+                    y: Settings.spacing * 4
             
                     onBack: changePage(mainPage)
                 }
@@ -238,10 +239,10 @@ PanelWindow {
 
                     visible: visiblePage == this
 
-                    width: parent.width - (Settings.spacing * 4)
+                    width: parent.width - (Settings.spacing * 8)
 
-                    x: Settings.spacing * 2
-                    y: Settings.spacing * 2
+                    x: Settings.spacing * 4
+                    y: Settings.spacing * 4
 
                     onBack: changePage(mainPage)
                 }

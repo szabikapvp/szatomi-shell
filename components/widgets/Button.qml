@@ -16,25 +16,21 @@ Item {
     property string color: Colors.foreground
     property string textColor: Colors.background
     
-    property int radius: (size == "lg" || size == "md") ? Settings.radiusMd : Settings.radiusSm
+    property int radius:  999 //(size == "lg" || size == "md") ? Settings.radiusMd : Settings.radiusSm
     property bool bold: true
     property bool iconOnly: false
     property bool rightSide: false
-    property int minWidth: 180
 
-    property int fontSize: (size == "lg" || size == "md") ? Settings.fontSize : Settings.fontSize - 2
-
-    property int spacing: Settings.spacing * (
-        size == "lg" 
-        ? 2 : size == "md"
-        ? 1
-        : 1
-    )
+    property int fontSize: Settings.buttonFontSize[size]
+    property int spacing: Settings.buttonPadding[size]
+    // Sides without an icon get double padding
+    property int paddingLeft: icon != "" ? spacing : spacing * 2
+    property int paddingRight: rightSide ? spacing : (iconOnly ? spacing : spacing * 2)
 
     property bool disabled: false
 
-    implicitHeight: content.implicitHeight + spacing * 2
-    implicitWidth: content.implicitWidth + spacing * 2
+    implicitHeight: Settings.buttonHeight[size]
+    implicitWidth: content.implicitWidth + paddingLeft + paddingRight
 
     Layout.fillWidth: true
 
@@ -92,16 +88,16 @@ Item {
         RowLayout {
             id: content
 
-            x: spacing
-            y: spacing
-            width: parent.width - (root.spacing * 2) - (root.rightSide ? 24 + root.spacing : 0)
+            x: root.paddingLeft
+            anchors.verticalCenter: parent.verticalCenter
+            // width: parent.width - (root.spacing * 2) - (root.rightSide ? Settings.buttonIconSize + root.spacing : 0)
 
             spacing: Settings.spacing * (size == "lg" ? 2 : 1)
 
             Icon {
                 visible: root.icon != ""
                 icon: root.icon
-                size: 24
+                size: Settings.buttonIconSize
                 color: disabled ? Qt.darker(textColor, 1.8) : textColor
             }
 
@@ -123,11 +119,11 @@ Item {
             anchors.right: parent.right
             anchors.rightMargin: spacing
 
-            y: spacing
+            anchors.verticalCenter: parent.verticalCenter
 
             visible: root.rightSide
             icon: "arrow-right"
-            size: 24
+            size: Settings.buttonIconSize
             color: textColor
         }
     }

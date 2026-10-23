@@ -49,7 +49,7 @@ QtObject {
                 root.foregroundHover = Qt.darker(root.foreground, root.hover);
                 root.foregroundActive = Qt.darker(root.foreground, root.active);
                 
-                root.primary = "#e8202a"; 
+                root.primary = "#D71921"; 
                 root.primaryHover = Qt.darker(root.primary, root.hover); 
                 root.primaryActive = Qt.darker(root.primary, root.active); 
 

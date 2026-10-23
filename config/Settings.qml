@@ -22,6 +22,37 @@ QtObject {
 
     property int spinnerSize: 24
 
+    // BUTTON
+
+    property var buttonPadding: ({ lg: spacing * 2, md: spacing, sm: spacing })
+    property var buttonFontSize: ({ lg: fontSize, md: fontSize, sm: fontSize - 2 })
+    property int buttonIconSize: 24
+
+    // Heights follow from the padding and the taller of icon and text, so buttons never set one explicitly
+    readonly property var buttonHeight: ({
+        lg: Math.max(buttonIconSize, buttonMetrics.height) + buttonPadding.lg * 2,
+        md: Math.max(buttonIconSize, buttonMetrics.height) + buttonPadding.md * 2,
+        sm: Math.max(buttonIconSize, buttonMetricsSm.height) + buttonPadding.sm * 2
+    })
+
+    readonly property FontMetrics buttonMetrics: FontMetrics {
+        font.family: root.fontFamily
+        font.pixelSize: root.buttonFontSize.lg
+        font.bold: true
+    }
+
+    readonly property FontMetrics buttonMetricsSm: FontMetrics {
+        font.family: root.fontFamily
+        font.pixelSize: root.buttonFontSize.sm
+        font.bold: true
+    }
+
+    // SCROLLBAR
+
+    property int scrollbarWidth: 3
+    property int scrollbarHoverWidth: 6
+    property int scrollbarMargin: 3
+
     // ANIMATIONS
 
     property int popDuration: 200

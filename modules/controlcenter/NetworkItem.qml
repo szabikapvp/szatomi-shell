@@ -173,31 +173,22 @@ Item {
                 id: inputPanel
                 Layout.fillWidth: true
 
+                spacing: Settings.spacing
+
                 visible: expanded && !conn.active
 
-                TextField {
+                InputField {
                     id: passwordField
 
+                    size: "sm"
                     placeholderText: "Password"
-                    Layout.fillWidth: true
-                    color: Colors.text
-                    placeholderTextColor: mouseArea.containsMouse ? Qt.darker(Colors.text, 3) : Qt.darker(Colors.text, 2)
-                    padding: Settings.spacing
-                    leftPadding: Settings.spacing * 2
-                    font.pixelSize: Settings.fontSize - 2
-                    font.family: Settings.fontFamily
-                    echoMode: TextInput.Password
+                    type: "password"
 
                     onVisibleChanged: {
                         if (visible) forceActiveFocus()
                     }
 
                     onAccepted: submitPassword()
-
-                    background: Rectangle {
-                        color: Qt.lighter(Colors.background, 1.8)
-                        radius: Settings.radiusSm
-                    }
                 }
 
                 Button {
