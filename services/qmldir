@@ -9,3 +9,4 @@ singleton Processor Processor.qml
 singleton Network Network.qml
 singleton Bluetooth Bluetooth.qml
 singleton Fullscreen Fullscreen.qml
+singleton Gpu Gpu.qml

@@ -16,6 +16,9 @@ QtObject {
         { type: "power", name: "Power", icon: "power", tile: Qt.resolvedUrl("PowerTile.qml"), page: Qt.resolvedUrl("../PowerPage.qml"), sizes: buttonSizes },
         { type: "volume", name: "Volume", icon: "volume-2", tile: Qt.resolvedUrl("VolumeTile.qml"), sizes: sliderSizes },
         { type: "brightness", name: "Brightness", icon: "brightness-3", tile: Qt.resolvedUrl("BrightnessTile.qml"), sizes: sliderSizes },
+        { type: "cpu", name: "CPU", icon: "cpu", tile: Qt.resolvedUrl("CpuTile.qml"), sizes: panelSizes },
+        { type: "ram", name: "RAM", icon: "ram", tile: Qt.resolvedUrl("RamTile.qml"), sizes: panelSizes },
+        { type: "gpu", name: "GPU", icon: "gpu", tile: Qt.resolvedUrl("GpuTile.qml"), sizes: panelSizes },
         { type: "clock", name: "Clock", icon: "clock", tile: Qt.resolvedUrl("ClockTile.qml"), sizes: panelSizes },
         { type: "calendar", name: "Calendar", icon: "calendar", tile: Qt.resolvedUrl("CalendarTile.qml"), sizes: panelSizes }
     ]

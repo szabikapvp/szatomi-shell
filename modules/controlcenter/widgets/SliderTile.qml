@@ -17,10 +17,11 @@ Tile {
     readonly property bool vertical: rows > columns
     readonly property int inset: (Math.min(width, height) - Settings.buttonIconSize) / 2
 
-    // The service lags behind the pointer, so a drag shows its own value until released
+    // The service lags behind the pointer, so drags and scrolls show their own value until they end
     property bool dragging: false
+    property bool scrolling: false
     property real dragValue: 0
-    readonly property real shownValue: dragging ? dragValue : value
+    readonly property real shownValue: dragging || scrolling ? dragValue : value
 
     readonly property real length: vertical ? height : width
     readonly property real fillLength: length * Math.max(0, Math.min(100, shownValue)) / 100
@@ -105,8 +106,23 @@ Tile {
                 wheel.accepted = false
                 return
             }
-            root.moved(Math.max(0, Math.min(100, root.value + Math.sign(wheel.angleDelta.y) * Settings.sliderScrollStep)))
+
+            // Fractions of a notch pass through, so touchpads scroll smoothly. Those follow natural scrolling, so up is always up
+            const natural = Settings.naturalScroll && wheel.pixelDelta.y != 0
+            const notches = wheel.angleDelta.y / 120 * (natural ? -1 : 1)
+            const base = root.scrolling ? root.dragValue : root.value
+
+            root.dragValue = Math.max(0, Math.min(100, base + notches * Settings.sliderScrollStep))
+            root.scrolling = true
+            scrollEnd.restart()
+            root.moved(root.dragValue)
         }
+    }
+
+    Timer {
+        id: scrollEnd
+        interval: 500
+        onTriggered: root.scrolling = false
     }
 
     // Whether the fill reaches a point, measured from where it starts

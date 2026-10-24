@@ -27,6 +27,26 @@ Singleton {
         return level
     }
 
+    // Scrolling asks for changes faster than Pipewire reports them back, so they build on the last request
+    property real targetLevel: -1
+
+    Timer {
+        id: targetReset
+        interval: 500
+        onTriggered: targetLevel = -1
+    }
+
+    function adjust(delta) {
+        const base = targetLevel >= 0 ? targetLevel : level
+        targetLevel = Math.max(0, Math.min(100, base + delta))
+        targetReset.restart()
+        setLevel(targetLevel)
+    }
+
+    function toggleMute() {
+        if (Pipewire.defaultAudioSink?.audio) Pipewire.defaultAudioSink.audio.muted = !isMuted
+    }
+
     function setLevel(value) {
         if (Pipewire.defaultAudioSink?.audio) Pipewire.defaultAudioSink.audio.volume = Math.max(0, Math.min(100, value)) / 100
     }

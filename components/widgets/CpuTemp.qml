@@ -8,13 +8,15 @@ import qs.services
 import qs.config
 
 RowLayout {
+    id: root
 
     property int textWidth: 64
+    property color color: Colors.text
 
     Text {                        
         id: cpuText
         text: Processor.getTemp() ? Processor.getTemp() + " °C" : "--"
-        color: Colors.text
+        color: Processor.hot ? Colors.primary : root.color
         font.pixelSize: Settings.fontSize
         font.family: Settings.fontFamily
         font.bold: true

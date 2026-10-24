@@ -7,12 +7,16 @@ import "../../components/widgets"
 import "../controlcenter"
 
 import qs.config
+import qs.services
 
 PanelWindow {
     id: bar
 
     property var modelData
     screen: modelData
+
+    // Icons open its pages
+    property var controlCenter
 
     anchors {
         top: Settings.barPosition == "top"
@@ -55,7 +59,11 @@ PanelWindow {
                 anchors.bottom: parent.bottom
                 spacing: Settings.spacing
                 
-                CpuTemp {}
+                BarButton {
+                    id: cpuButton
+                    tooltip: "CPU load " + Processor.usage + "%"
+                    CpuTemp { color: cpuButton.tint }
+                }
                 //CpuUsage {}
                 //MemoryUsage {}
             }
@@ -110,9 +118,45 @@ PanelWindow {
                 anchors.bottom: parent.bottom
                 spacing: Settings.spacing
 
-                WifiIcon {}
-                BatteryIcon {}
-                VolumeIcon {}
+                // Left click opens the Wi-Fi page, right click turns Wi-Fi on or off
+                BarButton {
+                    id: wifiButton
+                    tooltip: {
+                        if (Network.ethernet) return "Ethernet"
+                        if (!Network.wifiEnabled) return "Wi-Fi off"
+                        if (Network.wifiStatus == "connected") return Network.networkName + " · " + Network.networkStrength + "%"
+                        if (Network.wifiStatus == "connecting") return "Connecting..."
+                        return "Not connected"
+                    }
+
+                    onClicked: (mouse) => {
+                        if (mouse.button == Qt.RightButton) Network.toggleWifi()
+                        else bar.controlCenter?.togglePage(Qt.resolvedUrl("../controlcenter/WifiPage.qml"))
+                    }
+
+                    WifiIcon { color: wifiButton.tint }
+                }
+
+                BarButton {
+                    id: batteryButton
+                    tooltip: Battery.level + "%" + (Battery.charging ? " · Charging" : "")
+
+                    onClicked: bar.controlCenter?.togglePage(Qt.resolvedUrl("../controlcenter/PowerPage.qml"))
+
+                    BatteryIcon { color: batteryButton.tint }
+                }
+
+                // Click mutes, scrolling changes the volume
+                BarButton {
+                    id: volumeButton
+                    tooltip: Audio.isMuted ? "Muted" : "Volume " + Audio.level + "%"
+
+                    onClicked: Audio.toggleMute()
+                    onScrolled: (notches) => Audio.adjust(notches * Settings.sliderScrollStep)
+
+                    VolumeIcon { color: volumeButton.tint }
+                }
+
                 DateText {}
                 TimeText {}
             }

@@ -1,26 +1,22 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import Quickshell
 import "../../components"
-import "../../modules/controlcenter"
+import qs.config
 import qs.services
 
 Item {
     id: root
-    width: 18
-    height: 18
 
-/*    MouseArea {
-        
-        anchors.fill: parent
-        
-        cursorShape: Qt.PointingHandCursor
-        onClicked: () => {
-            
-        }
-    } */
+    property color color: Colors.text
+
+    Layout.preferredWidth: 18
+    Layout.preferredHeight: 18
+    Layout.alignment: Qt.AlignVCenter
 
     Icon {
         icon: Network.icon
+        color: root.color
     }
 }

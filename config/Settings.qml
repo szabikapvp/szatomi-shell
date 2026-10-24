@@ -80,6 +80,7 @@ QtObject {
     property string barPosition: value("barPosition", "bottom")
     property bool barFloating: value("barFloating", false)
     property int workspaceCount: value("workspaceCount", 9)
+    property int tooltipDelay: value("tooltipDelay", 500)
 
     // OSD
 
@@ -104,6 +105,10 @@ QtObject {
 
     property int sliderScrollStep: value("sliderScrollStep", 5)
     property int brightnessMin: value("brightnessMin", 5) // 0% turns some backlights fully off
+
+    // CPU
+
+    property int cpuHotTemp: value("cpuHotTemp", 80)
 
     // POWER
 

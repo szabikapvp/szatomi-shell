@@ -283,6 +283,20 @@ PanelWindow {
             showing = !showing
         }
     }
+
+    // Opens straight to a page, or closes when that page is already showing
+    function togglePage(page) {
+        if (showing && pageLoader.source.toString() === page.toString()) {
+            close()
+            return
+        }
+
+        // Mid animation the panel ignores open() and close(), so leave the page alone too
+        if (panel.running) return
+        open()
+        openPage(page)
+    }
+
     function toggle() {
         if (showing) close()
         else open()

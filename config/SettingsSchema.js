@@ -39,6 +39,7 @@ var entries = [
     { key: "barFloating", category: "Bar", label: "Floating", description: "Detach the bar from the screen edge", type: "bool" },
     { key: "barHeight", category: "Bar", label: "Height", type: "int", min: 36, max: 60, step: 1, unit: "px" },
     { key: "workspaceCount", category: "Bar", label: "Workspaces", description: "Number of workspace dots", type: "int", min: 1, max: 10, step: 1, unit: "" },
+    { key: "tooltipDelay", category: "Bar", label: "Tooltip delay", description: "How long to hover a bar icon before its tooltip shows", type: "int", min: 100, max: 1500, step: 50, unit: "ms" },
 
     // CONTROL CENTER
     { key: "controlCenterColumns", category: "Control center", label: "Columns", description: "Widgets that no longer fit are hidden until there's room again", type: "int", min: 3, max: 5, step: 1, unit: "" },
@@ -64,6 +65,7 @@ var entries = [
     { key: "backSwipeResetDelay", category: "Input", label: "Back swipe reset", description: "Pause that ends a swipe", type: "int", min: 100, max: 1000, step: 50, unit: "ms" },
 
     // SYSTEM
+    { key: "cpuHotTemp", category: "System", label: "CPU hot temperature", description: "From here on the CPU temperature turns red", type: "int", min: 60, max: 95, step: 1, unit: "°C" },
     { key: "brightnessMin", category: "System", label: "Minimum brightness", description: "Lowest level the brightness slider can set", type: "int", min: 5, max: 30, step: 1, unit: "%" },
     { key: "wifiRescanDelay", category: "System", label: "Wi-Fi rescan delay", description: "Wait after turning Wi-Fi on before scanning", type: "int", min: 500, max: 5000, step: 100, unit: "ms" },
     { key: "bluetoothScanDuration", category: "System", label: "Bluetooth scan duration", type: "int", min: 5000, max: 60000, step: 1000, unit: "ms" },

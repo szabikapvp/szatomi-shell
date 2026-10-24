@@ -24,7 +24,7 @@ Item {
     readonly property int pitch: cellSize + gap
 
     // The saved layout, minus anything that doesn't fit anymore, like a widget whose sizes changed
-    readonly property var widgets: sanitize(Array.isArray(store.widgets) ? store.widgets : catalog.defaultLayout)
+    readonly property var widgets: sanitize(savedLayout())
 
     // Layout a drag is heading towards, saved on release
     property var preview: null
@@ -271,6 +271,13 @@ Item {
     function fits(rect, layout) {
         return rect.x >= 0 && rect.y >= 0 && rect.x + rect.w <= columns && rect.y + rect.h <= maxRows
             && !layout.some(other => other.type !== rect.type && overlaps(rect, other))
+    }
+
+    // Layouts read back from the file are array-like sequences rather than arrays, so they're copied into one
+    function savedLayout() {
+        const saved = store.widgets
+        const isList = saved !== null && typeof saved === "object" && typeof saved.length === "number"
+        return isList ? Array.from(saved) : catalog.defaultLayout
     }
 
     // Keeps known widgets once each, at an allowed size, on free cells

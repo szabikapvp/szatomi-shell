@@ -4,9 +4,13 @@ import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import "../../components"
 
+import qs.config
 import qs.services
 
 Item {
+    id: root
+
+    property color color: Colors.text
 
     Layout.preferredWidth: 18
     Layout.preferredHeight: 18
@@ -17,6 +21,7 @@ Item {
         id: bottomIcon
         anchors.fill: parent
         visible: false
+        color: root.color
 
         icon: {
             if (Battery.getLevel() <= 15) return "battery-0"
@@ -37,6 +42,7 @@ Item {
 
         Icon {
             icon: "bolt"
+            color: root.color
             visible: Battery.isCharging()
             anchors.centerIn: parent
             anchors.horizontalCenterOffset: -8
@@ -65,6 +71,7 @@ Item {
 
     Icon {
         icon: "bolt"
+        color: root.color
         visible: Battery.isCharging()
         anchors.centerIn: parent
         anchors.horizontalCenterOffset: -8

@@ -4,10 +4,17 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
+import qs.config
+
 Singleton {
 
     property int usage: 0
     property int temp: 0
+    readonly property bool hot: temp >= Settings.cpuHotTemp
+
+    // Recent temperatures, oldest first, one per update
+    property var tempHistory: []
+    readonly property int historyLength: 60
 
     property var lastCpuIdle: 0
     property var lastCpuTotal: 0
@@ -49,7 +56,10 @@ Singleton {
         command: ["sh", "-c", `sensors -j | jq -r '.. | .["Package id 0"]? | select(. != null) | .temp1_input'`]
         stdout: SplitParser {
             onRead: data => {
-                temp = parseInt(data)
+                const value = parseInt(data)
+                if (isNaN(value)) return
+                temp = value
+                tempHistory = tempHistory.concat([value]).slice(-historyLength)
             }
         }
         Component.onCompleted: running = true

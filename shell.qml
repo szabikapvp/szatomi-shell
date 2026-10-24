@@ -37,19 +37,19 @@ ShellRoot {
     SliderPopup {
         icon: BrightnessIcon {}
         prop: Brightness.getLevel()
-        suppressed: controlCenter.showing
+        suppressed: controlCenterWindow.showing
     }
 
     SliderPopup {
         icon: VolumeIcon {}
         prop: Audio.getLevel()
-        suppressed: controlCenter.showing
+        suppressed: controlCenterWindow.showing
     }
 
-    ControlCenter { id: controlCenter }
+    ControlCenter { id: controlCenterWindow }
 
     Variants {
         model: Quickshell.screens
-        Bar {}
+        Bar { controlCenter: controlCenterWindow }
     }
 }
