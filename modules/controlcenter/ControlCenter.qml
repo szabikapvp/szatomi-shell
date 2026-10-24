@@ -31,8 +31,10 @@ PanelWindow {
         grid.editing = false
     }
 
-    // Resting position for the remembered corner
-    property real cornerX: panelState.right ? panel.parent.width - panel.width - marginSize : marginSize
+    // Resting position for the remembered snap point: a corner, or the middle of the top or bottom edge
+    property real cornerX: panelState.center
+        ? (panel.parent.width - panel.width) / 2
+        : panelState.right ? panel.parent.width - panel.width - marginSize : marginSize
     property real cornerY: panelState.bottom ? panel.parent.height - panel.height - marginSize : marginSize
 
     FileView {
@@ -45,7 +47,7 @@ PanelWindow {
         }
     }
 
-    // Remembers the corner across restarts
+    // Remembers the snap point across restarts
     FileView {
         path: Quickshell.statePath("controlcenter.json")
         onAdapterUpdated: writeAdapter()
@@ -54,6 +56,7 @@ PanelWindow {
             id: panelState
             property bool right: true
             property bool bottom: true
+            property bool center: false
             property var widgets: null
         }
     }
@@ -118,6 +121,7 @@ PanelWindow {
 
         fromRight: panelState.right
         fromBottom: panelState.bottom
+        fromCenter: panelState.center
         radius: Settings.radiusLg
 
         Rectangle {
@@ -151,21 +155,25 @@ PanelWindow {
                     panel.y = panel.y
                 }
 
+                // Snaps to whichever of left, center and right rests closest
                 onReleased: {
                     snapFrom = Qt.point(panel.x, panel.y)
-                    panelState.right = panel.x + panel.width / 2 > panel.parent.width / 2
+                    const restX = [marginSize, (panel.parent.width - panel.width) / 2, panel.parent.width - panel.width - marginSize]
+                    const nearest = restX.reduce((best, x, i) => Math.abs(panel.x - x) < Math.abs(panel.x - restX[best]) ? i : best, 0)
+                    panelState.center = nearest == 1
+                    panelState.right = nearest == 2
                     panelState.bottom = panel.y + panel.height / 2 > panel.parent.height / 2
                     snap.restart()
                 }
             }
 
-            // The small corner faces the screen corner
+            // The corner facing the screen corner stays small, the one the panel grows from
             radius: Settings.radiusLg
             property int calculatedRadius: Settings.radiusLg + panelPadding
-            topLeftRadius: !panelState.right && !panelState.bottom ? Settings.radiusSm : calculatedRadius
-            topRightRadius: panelState.right && !panelState.bottom ? Settings.radiusSm : calculatedRadius
-            bottomLeftRadius: !panelState.right && panelState.bottom ? Settings.radiusSm : calculatedRadius
-            bottomRightRadius: panelState.right && panelState.bottom ? Settings.radiusSm : calculatedRadius
+            topLeftRadius: panel.isOrigin(false, false) ? Settings.radiusSm : calculatedRadius
+            topRightRadius: panel.isOrigin(true, false) ? Settings.radiusSm : calculatedRadius
+            bottomLeftRadius: panel.isOrigin(false, true) ? Settings.radiusSm : calculatedRadius
+            bottomRightRadius: panel.isOrigin(true, true) ? Settings.radiusSm : calculatedRadius
 
             color: Colors.background
             border.width: 1

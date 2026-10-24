@@ -45,7 +45,7 @@ QtObject {
                 root.background = "#0a0a0a" /*pywal.special.background*/;
                 root.foreground = "#f4f1f2";
                 // lighter() can't brighten pure black, so tint with the foreground instead
-                root.backgroundSubtle = Qt.tint(root.background, Qt.alpha(root.foreground, 0.15))
+                root.backgroundSubtle = Qt.tint(root.background, Qt.alpha(root.foreground, 0.07))
                 root.foregroundHover = Qt.darker(root.foreground, root.hover);
                 root.foregroundActive = Qt.darker(root.foreground, root.active);
                 

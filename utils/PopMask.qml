@@ -2,8 +2,8 @@ import QtQuick
 
 import qs.config
 
-// Reveals its children from a corner like a growing mask, without moving or resizing them.
-// Size changes ease in the same way, keeping the origin corner in place
+// Reveals its children from a corner, or the middle of the top or bottom edge, like a growing mask,
+// without moving or resizing them. Size changes ease in the same way, keeping the origin in place
 Item {
     id: root
 
@@ -15,6 +15,8 @@ Item {
     // Corner to grow from, defaults to the one nearest the parent's edges
     property bool fromRight: parent ? x + width / 2 > parent.width / 2 : true
     property bool fromBottom: parent ? y + height / 2 > parent.height / 2 : true
+    // Grows from the middle of the edge instead, overriding fromRight
+    property bool fromCenter: false
 
     // Eases towards the real size, the mask follows it
     property real shownWidth: width
@@ -43,7 +45,7 @@ Item {
 
     // Where the real size sits inside the content, at the origin corner. Place the actual contents here,
     // so they don't jump when a held size is released
-    readonly property real contentX: fromRight ? visibleWidth - width : 0
+    readonly property real contentX: fromCenter ? (visibleWidth - width) / 2 : fromRight ? visibleWidth - width : 0
     readonly property real contentY: fromBottom ? visibleHeight - height : 0
 
     // Only mask while animating, so the content renders natively at rest
@@ -54,7 +56,7 @@ Item {
 
         width: root.visibleWidth
         height: root.visibleHeight
-        x: root.fromRight ? root.width - width : 0
+        x: root.fromCenter ? (root.width - width) / 2 : root.fromRight ? root.width - width : 0
         y: root.fromBottom ? root.height - height : 0
     }
 
@@ -80,14 +82,17 @@ Item {
 
         property var source: contentSource
         property size itemSize: Qt.size(width, height)
-        property vector4d maskRect: Qt.vector4d(root.fromRight ? width - maskWidth : 0, root.fromBottom ? height - maskHeight : 0, maskWidth, maskHeight)
+        property vector4d maskRect: Qt.vector4d(
+            root.fromCenter ? (width - maskWidth) / 2 : root.fromRight ? width - maskWidth : 0,
+            root.fromBottom ? height - maskHeight : 0,
+            maskWidth, maskHeight)
 
         // The origin corner sits on the content's own corner, so leave its rounding to the content
         property vector4d radii: Qt.vector4d(
-            !root.fromRight && !root.fromBottom ? 0 : root.radius,
-            root.fromRight && !root.fromBottom ? 0 : root.radius,
-            root.fromRight && root.fromBottom ? 0 : root.radius,
-            !root.fromRight && root.fromBottom ? 0 : root.radius)
+            root.isOrigin(false, false) ? 0 : root.radius,
+            root.isOrigin(true, false) ? 0 : root.radius,
+            root.isOrigin(true, true) ? 0 : root.radius,
+            root.isOrigin(false, true) ? 0 : root.radius)
 
         fragmentShader: Qt.resolvedUrl("shaders/popmask.frag.qsb")
     }
@@ -97,6 +102,11 @@ Item {
         target: root
         property: "progress"
         duration: Settings.popDuration
+    }
+
+    // The corner it grows from. Growing from an edge's middle has none, so every corner stays round
+    function isOrigin(right, bottom) {
+        return !fromCenter && fromBottom == bottom && fromRight == right
     }
 
     function popIn() {

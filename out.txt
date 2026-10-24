@@ -1,0 +1,1 @@
+Could not open config file at "/tmp/claude-1000/-home-tomi--config-quickshell/cb470d44-cb93-4660-bc9e-7889346e4aa5/scratchpad/gridtest/shell.qml"
