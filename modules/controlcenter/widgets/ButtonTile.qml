@@ -28,7 +28,7 @@ Tile {
         radius: parent.radius
         color: Qt.alpha(Colors.foreground, bodyArea.pressed ? 0.1 : bodyArea.containsMouse ? 0.05 : 0)
 
-        Behavior on color { ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
+        Behavior on color { enabled: root.settled; ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
     }
 
     MouseArea {
@@ -57,14 +57,14 @@ Tile {
         color: root.active ? Colors.primary : (root.compact ? "transparent" : Qt.alpha(Colors.foreground, 0.1))
         opacity: root.disabled ? 0.4 : 1
 
-        Behavior on color { ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
+        Behavior on color { enabled: root.settled; ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
 
         Rectangle {
             anchors.fill: parent
             radius: parent.radius
             color: Qt.alpha(Colors.foreground, iconArea.pressed ? 0.2 : iconArea.containsMouse ? 0.1 : 0)
 
-            Behavior on color { ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
+            Behavior on color { enabled: root.settled; ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
         }
 
         Icon {

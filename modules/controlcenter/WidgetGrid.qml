@@ -126,7 +126,8 @@ Item {
                 id: tile
 
                 anchors.fill: parent
-                active: cell.visible
+                // Not cell.visible, which also turns false while the panel is hidden and would rebuild every tile on open
+                active: cell.opacity > 0
                 source: cell.modelData.tile
                 // Editing takes over the mouse
                 enabled: !root.editing

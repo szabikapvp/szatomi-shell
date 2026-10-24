@@ -9,6 +9,10 @@ Rectangle {
     property int columns: 1
     property int rows: 1
 
+    // The grid sizes a tile only after creating it, so animations wait for that first layout
+    property bool settled: false
+    Component.onCompleted: Qt.callLater(() => settled = true)
+
     // Asks the grid to start editing
     signal held()
     // Asks the control center to open this widget's page

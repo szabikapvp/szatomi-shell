@@ -138,8 +138,12 @@ QtObject {
     // with the defaults and then jump
     Component.onCompleted: file.text()
 
+    // Defaults as declared above, noted down as each setting is read
+    readonly property var defaults: ({})
+
     // The saved value if there's a usable one, made safe for its range, otherwise the default
     function value(key, fallback) {
+        defaults[key] = fallback
         const entry = Schema.find(key)
         const override = saved.overrides?.[key]
         if (!entry || override === undefined) return fallback
@@ -150,6 +154,12 @@ QtObject {
         const entry = Schema.find(key)
         const safe = entry ? Schema.sanitize(entry, newValue) : undefined
         if (safe === undefined) return false
+
+        // Only changes are saved, so a setting set back to its default counts as unchanged
+        if (safe === defaults[key]) {
+            reset(key)
+            return true
+        }
 
         const overrides = Object.assign({}, saved.overrides)
         overrides[key] = safe

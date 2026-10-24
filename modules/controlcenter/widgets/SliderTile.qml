@@ -44,8 +44,8 @@ Tile {
             height: root.vertical ? root.fillLength : parent.height
             color: Colors.foreground
 
-            Behavior on width { enabled: !root.dragging; NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
-            Behavior on height { enabled: !root.dragging; NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
+            Behavior on width { enabled: root.settled && !root.dragging; NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
+            Behavior on height { enabled: root.settled && !root.dragging; NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
         }
     }
 
