@@ -4,29 +4,33 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
+import "SettingsSchema.js" as Schema
+
+// Defaults for every setting. Those wrapped in value() can be changed on the Settings page,
+// see SettingsSchema.js for their ranges
 QtObject {
     id: root
 
     property string wallpaper: ""
 
-    property int fontSize: 16
-    property string fontFamily: "Space Grotesk"
-    property string headerFont: "Dela Gothic One"
+    property int fontSize: value("fontSize", 16)
+    property string fontFamily: value("fontFamily", "Space Grotesk")
+    property string headerFont: value("headerFont", "Dela Gothic One")
 
-    property int windowSpacing: 8
-    property int spacing: 10
+    property int windowSpacing: value("windowSpacing", 8)
+    property int spacing: value("spacing", 10)
 
-    property int radiusSm: 8
-    property int radiusMd: 16
-    property int radiusLg: 32
+    property int radiusSm: value("radiusSm", 8)
+    property int radiusMd: value("radiusMd", 16)
+    property int radiusLg: value("radiusLg", 32)
 
-    property int spinnerSize: 24
+    property int spinnerSize: value("spinnerSize", 24)
 
     // BUTTON
 
     property var buttonPadding: ({ lg: spacing * 2, md: spacing, sm: spacing })
     property var buttonFontSize: ({ lg: fontSize, md: fontSize, sm: fontSize - 2 })
-    property int buttonIconSize: 24
+    property int buttonIconSize: value("buttonIconSize", 24)
 
     // Heights follow from the padding and the taller of icon and text, so buttons never set one explicitly
     readonly property var buttonHeight: ({
@@ -49,33 +53,33 @@ QtObject {
 
     // SCROLLBAR
 
-    property int scrollbarWidth: 3
-    property int scrollbarHoverWidth: 6
-    property int scrollbarMargin: 3
+    property int scrollbarWidth: value("scrollbarWidth", 3)
+    property int scrollbarHoverWidth: value("scrollbarHoverWidth", 6)
+    property int scrollbarMargin: value("scrollbarMargin", 3)
 
     // ANIMATIONS
 
-    property int popDuration: 200
-    property int snapDuration: 400
-    property int resizeDuration: 200
+    property int popDuration: value("popDuration", 200)
+    property int snapDuration: value("snapDuration", 400)
+    property int resizeDuration: value("resizeDuration", 200)
 
-    property string dateFormat: "MM/dd ddd"
-    property string timeFormat: "h:mm"
-    property string longDateFormat: "dddd, MMMM d"
+    property string dateFormat: value("dateFormat", "MM/dd ddd")
+    property string timeFormat: value("timeFormat", "h:mm")
+    property string longDateFormat: value("longDateFormat", "dddd, MMMM d")
 
     // KEYBINDS
 
     property list<string> backShortcuts: ["Escape"]
-    property int backSwipeThreshold: 120
-    property int backSwipeResetDelay: 300
-    property bool naturalScroll: true // match the compositor's touchpad setting
+    property int backSwipeThreshold: value("backSwipeThreshold", 120)
+    property int backSwipeResetDelay: value("backSwipeResetDelay", 300)
+    property bool naturalScroll: value("naturalScroll", true) // match the compositor's touchpad setting
 
     // BAR
 
-    property int barHeight: 44
-    property string barPosition: "bottom"
-    property bool barFloating: false
-    property int workspaceCount: 9
+    property int barHeight: value("barHeight", 44)
+    property string barPosition: value("barPosition", "bottom")
+    property bool barFloating: value("barFloating", false)
+    property int workspaceCount: value("workspaceCount", 9)
 
     // OSD
 
@@ -85,24 +89,25 @@ QtObject {
 
     // CONTROL CENTER
 
-    property int controlCenterColumns: 4
-    property int controlCenterMaxRows: 6
+    property int controlCenterColumns: value("controlCenterColumns", 4)
+    property int controlCenterMaxRows: value("controlCenterMaxRows", 6)
     // Rows fit a large button with room around it, so the grid follows the font size
     property int controlCenterCellSize: buttonHeight.lg + spacing * 3
     property int controlCenterPadding: spacing * 4
-    property int controlCenterHoldDuration: 500
-    property int controlCenterPageHeight: 500
-    property int wifiRescanDelay: 1500
-    property int bluetoothScanDuration: 20000
+    property int controlCenterHoldDuration: value("controlCenterHoldDuration", 500)
+    property int controlCenterPageHeight: value("controlCenterPageHeight", 500)
+    property int settingsPageSize: value("settingsPageSize", 720)
+    property int wifiRescanDelay: value("wifiRescanDelay", 1500)
+    property int bluetoothScanDuration: value("bluetoothScanDuration", 20000)
 
     // SLIDERS
 
-    property int sliderScrollStep: 5
-    property int brightnessMin: 5 // 0% turns some backlights fully off
+    property int sliderScrollStep: value("sliderScrollStep", 5)
+    property int brightnessMin: value("brightnessMin", 5) // 0% turns some backlights fully off
 
     // POWER
 
-    property int powerConfirmTimeout: 3000
+    property int powerConfirmTimeout: value("powerConfirmTimeout", 3000)
     property var powerCommands: ({
         lock: ["hyprlock"],
         sleep: ["systemctl", "suspend"],
@@ -110,4 +115,55 @@ QtObject {
         restart: ["systemctl", "reboot"],
         shutdown: ["systemctl", "poweroff"]
     })
+
+    // SAVED CHANGES
+
+    readonly property var schema: ({ categories: Schema.categories, entries: Schema.entries, fonts: Schema.fonts, maxFormatLength: Schema.maxFormatLength })
+
+    readonly property FileView store: FileView {
+        id: file
+
+        path: Quickshell.statePath("settings.json")
+        blockLoading: true
+        // Deferred, since writing right away drops further changes made in the same tick
+        onAdapterUpdated: Qt.callLater(file.writeAdapter)
+
+        adapter: JsonAdapter {
+            id: saved
+            property var overrides: ({})
+        }
+    }
+
+    // Reading the text forces the first load right away. It is queued otherwise, so the shell would start
+    // with the defaults and then jump
+    Component.onCompleted: file.text()
+
+    // The saved value if there's a usable one, made safe for its range, otherwise the default
+    function value(key, fallback) {
+        const entry = Schema.find(key)
+        const override = saved.overrides?.[key]
+        if (!entry || override === undefined) return fallback
+        return Schema.sanitize(entry, override) ?? fallback
+    }
+
+    function set(key, newValue) {
+        const entry = Schema.find(key)
+        const safe = entry ? Schema.sanitize(entry, newValue) : undefined
+        if (safe === undefined) return false
+
+        const overrides = Object.assign({}, saved.overrides)
+        overrides[key] = safe
+        saved.overrides = overrides
+        return true
+    }
+
+    function reset(key) {
+        const overrides = Object.assign({}, saved.overrides)
+        delete overrides[key]
+        saved.overrides = overrides
+    }
+
+    function isModified(key) {
+        return saved.overrides?.[key] !== undefined
+    }
 }

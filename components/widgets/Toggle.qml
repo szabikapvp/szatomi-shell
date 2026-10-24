@@ -1,0 +1,46 @@
+import QtQuick
+
+import qs.config
+
+// On/off switch
+Item {
+    id: root
+
+    property bool checked: false
+    property bool disabled: false
+
+    signal toggled()
+
+    implicitHeight: Settings.buttonIconSize + Settings.spacing
+    implicitWidth: implicitHeight * 1.75
+
+    opacity: disabled ? 0.4 : 1
+
+    Rectangle {
+        anchors.fill: parent
+        radius: height / 2
+        color: root.checked ? Colors.primary : Qt.alpha(Colors.foreground, 0.15)
+
+        Behavior on color { ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
+
+        Rectangle {
+            readonly property int inset: Settings.spacing / 2
+
+            x: root.checked ? parent.width - width - inset : inset
+            anchors.verticalCenter: parent.verticalCenter
+            width: parent.height - inset * 2
+            height: width
+            radius: width / 2
+            color: Colors.text
+
+            Behavior on x { NumberAnimation { duration: Settings.popDuration; easing.type: Easing.OutCubic } }
+        }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        enabled: !root.disabled
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.toggled()
+    }
+}

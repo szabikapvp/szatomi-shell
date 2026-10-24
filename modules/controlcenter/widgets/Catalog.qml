@@ -12,6 +12,7 @@ QtObject {
     readonly property var entries: [
         { type: "wifi", name: "Wi-Fi", icon: "wifi-4", tile: Qt.resolvedUrl("WifiTile.qml"), page: Qt.resolvedUrl("../WifiPage.qml"), sizes: buttonSizes },
         { type: "bluetooth", name: "Bluetooth", icon: "bluetooth", tile: Qt.resolvedUrl("BluetoothTile.qml"), page: Qt.resolvedUrl("../BluetoothPage.qml"), sizes: buttonSizes },
+        { type: "settings", name: "Settings", icon: "settings", tile: Qt.resolvedUrl("SettingsTile.qml"), page: Qt.resolvedUrl("../SettingsPage.qml"), sizes: buttonSizes },
         { type: "power", name: "Power", icon: "power", tile: Qt.resolvedUrl("PowerTile.qml"), page: Qt.resolvedUrl("../PowerPage.qml"), sizes: buttonSizes },
         { type: "volume", name: "Volume", icon: "volume-2", tile: Qt.resolvedUrl("VolumeTile.qml"), sizes: sliderSizes },
         { type: "brightness", name: "Brightness", icon: "brightness-3", tile: Qt.resolvedUrl("BrightnessTile.qml"), sizes: sliderSizes },

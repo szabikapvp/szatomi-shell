@@ -15,7 +15,8 @@ import qs.utils
 PanelWindow {
     id: root
     
-    property int panelWidth: grid.implicitWidth + panelPadding * 2
+    // Pages can ask for their own width, the rest match the grid
+    property int panelWidth: (pageLoader.item?.preferredWidth ?? grid.implicitWidth) + panelPadding * 2
     property int panelPadding: Settings.controlCenterPadding
     property int marginSize: Settings.windowSpacing
 
@@ -49,8 +50,11 @@ PanelWindow {
 
     // Remembers the snap point across restarts
     FileView {
+        id: stateFile
+
         path: Quickshell.statePath("controlcenter.json")
-        onAdapterUpdated: writeAdapter()
+        // Deferred, since writing right away drops the other changes a snap makes in the same tick
+        onAdapterUpdated: Qt.callLater(stateFile.writeAdapter)
 
         adapter: JsonAdapter {
             id: panelState
