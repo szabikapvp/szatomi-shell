@@ -6,21 +6,26 @@ import "widgets"
 import qs.config
 import qs.services
 
-// A single row of round power actions, styled like the grid's one cell buttons
-RowLayout {
+ColumnLayout {
     id: root
 
     signal back()
     signal closeRequested()
 
-    readonly property int preferredWidth: implicitWidth
-    // Concentric with the round buttons, so the panel rounds fully too
-    readonly property int cornerRadius: Settings.controlCenterCellSize / 2
-
     // Actions that end the session need a second click
     property string armed: ""
 
-    spacing: Settings.spacing
+    readonly property var actions: [
+        { action: "shutdown", icon: "power", text: "Shut down", confirm: true },
+        { action: "restart", icon: "reload", text: "Restart", confirm: true },
+        { action: "sleep", icon: "sleep", text: "Sleep", confirm: false },
+        { action: "logout", icon: "logout", text: "Log out", confirm: true },
+        { action: "lock", icon: "lock", text: "Lock", confirm: false }
+    ]
+    // As large as a grid cell, smaller when the page is too narrow for all of them in a row
+    readonly property int buttonSize: Math.min(Settings.controlCenterCellSize, (width - row.spacing * (actions.length - 1)) / actions.length)
+
+    spacing: Settings.spacing * 2
 
     Timer {
         id: disarm
@@ -28,49 +33,57 @@ RowLayout {
         onTriggered: root.armed = ""
     }
 
-    Repeater {
-        model: [
-            { action: "lock", icon: "lock", text: "Lock", confirm: false },
-            { action: "sleep", icon: "sleep", text: "Sleep", confirm: false },
-            { action: "logout", icon: "logout", text: "Log out", confirm: true },
-            { action: "restart", icon: "reload", text: "Restart", confirm: true },
-            { action: "shutdown", icon: "power", text: "Shut down", confirm: true }
-        ]
+    PageHeader {
+        title: "Power"
+        onBack: root.back()
+    }
 
-        ButtonTile {
-            id: button
+    Rectangle {
+        Layout.fillWidth: true
+        height: 1
+        color: Colors.backgroundSubtle
+    }
 
-            required property var modelData
-            readonly property bool isArmed: root.armed == modelData.action
-            property bool tooltipReady: false
+    RowLayout {
+        id: row
 
-            icon: modelData.icon
-            active: isArmed
-            Layout.preferredWidth: Settings.controlCenterCellSize
-            Layout.preferredHeight: Settings.controlCenterCellSize
+        Layout.fillWidth: true
+        spacing: Settings.spacing
 
-            onClicked: root.run(modelData)
+        Repeater {
+            model: root.actions
 
-            HoverHandler {
-                id: hover
-                onHoveredChanged: {
-                    button.tooltipReady = false
-                    if (hovered) hoverDelay.restart()
-                    else hoverDelay.stop()
+            ColumnLayout {
+                id: item
+
+                required property var modelData
+                readonly property bool isArmed: root.armed == modelData.action
+
+                // Equal columns, whatever the label lengths
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1
+                spacing: Settings.spacing / 2
+
+                ButtonTile {
+                    icon: item.modelData.icon
+                    active: item.isArmed
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: root.buttonSize
+                    Layout.preferredHeight: root.buttonSize
+
+                    onClicked: root.run(item.modelData)
                 }
-            }
 
-            Timer {
-                id: hoverDelay
-                interval: Settings.tooltipDelay
-                onTriggered: button.tooltipReady = true
-            }
-
-            Tooltip {
-                target: button
-                text: button.isArmed ? "Click again to " + button.modelData.text.toLowerCase() : button.modelData.text
-                // Arming shows the warning right away
-                shown: hover.hovered && (button.tooltipReady || button.isArmed)
+                Text {
+                    text: item.isArmed ? "Confirm" : item.modelData.text
+                    color: item.isArmed ? Colors.primary : Qt.alpha(Colors.text, 0.6)
+                    font.pixelSize: Settings.fontSize - Settings.px(2)
+                    font.family: Settings.fontFamily
+                    font.bold: item.isArmed
+                    horizontalAlignment: Text.AlignHCenter
+                    elide: Text.ElideRight
+                    Layout.fillWidth: true
+                }
             }
         }
     }

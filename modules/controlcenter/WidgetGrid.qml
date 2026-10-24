@@ -151,7 +151,8 @@ Item {
 
                 anchors.fill: parent
                 enabled: root.editing
-                cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+                // A disabled MouseArea still sets its cursor, which would hide the tiles' own below
+                cursorShape: !enabled ? undefined : pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
 
                 onPressed: (mouse) => {
                     grabPos = Qt.point(mouse.x, mouse.y)

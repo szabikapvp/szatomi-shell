@@ -8,12 +8,15 @@ QtObject {
     readonly property var buttonSizes: range(1, Settings.controlCenterColumns).map(w => [w, 1])
     readonly property var sliderSizes: range(2, Settings.controlCenterMaxRows).map(h => [1, h]).concat(buttonSizes)
     readonly property var panelSizes: [[2, 2], [4, 2], [2, 4]]
+    // Wide enough for its placeholder first, a lone icon only when nothing else fits
+    readonly property var searchSizes: buttonSizes.slice(1).concat(buttonSizes.slice(0, 1))
 
     readonly property var entries: [
         { type: "wifi", name: "Wi-Fi", icon: "wifi-4", tile: Qt.resolvedUrl("WifiTile.qml"), page: Qt.resolvedUrl("../WifiPage.qml"), sizes: buttonSizes },
         { type: "bluetooth", name: "Bluetooth", icon: "bluetooth", tile: Qt.resolvedUrl("BluetoothTile.qml"), page: Qt.resolvedUrl("../BluetoothPage.qml"), sizes: buttonSizes },
         { type: "settings", name: "Settings", icon: "settings", tile: Qt.resolvedUrl("SettingsTile.qml"), page: Qt.resolvedUrl("../SettingsPage.qml"), sizes: buttonSizes },
         { type: "power", name: "Power", icon: "power", tile: Qt.resolvedUrl("PowerTile.qml"), page: Qt.resolvedUrl("../PowerPage.qml"), sizes: buttonSizes },
+        { type: "search", name: "Search", icon: "search", tile: Qt.resolvedUrl("SearchTile.qml"), page: Qt.resolvedUrl("../LauncherPage.qml"), sizes: searchSizes },
         { type: "volume", name: "Volume", icon: "volume-2", tile: Qt.resolvedUrl("VolumeTile.qml"), sizes: sliderSizes },
         { type: "brightness", name: "Brightness", icon: "brightness-3", tile: Qt.resolvedUrl("BrightnessTile.qml"), sizes: sliderSizes },
         { type: "cpu", name: "CPU", icon: "cpu", tile: Qt.resolvedUrl("CpuTile.qml"), sizes: panelSizes },
@@ -30,7 +33,8 @@ QtObject {
         { type: "clock", x: 0, y: 1, w: 2, h: 2 },
         { type: "volume", x: 2, y: 1, w: 1, h: 3 },
         { type: "brightness", x: 3, y: 1, w: 1, h: 3 },
-        { type: "power", x: 0, y: 3, w: 2, h: 1 }
+        { type: "power", x: 0, y: 3, w: 2, h: 1 },
+        { type: "search", x: 0, y: 4, w: 4, h: 1 }
     ]
 
     function find(type) {

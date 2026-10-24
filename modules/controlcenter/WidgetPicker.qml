@@ -38,9 +38,11 @@ ColumnLayout {
             text: hasRoom ? modelData.name : modelData.name + " (no room)"
             disabled: !hasRoom
 
+            // Adding drops this button from the list mid handler, so take what's needed first
             onClicked: {
-                root.grid.add(modelData.type)
-                root.back()
+                const page = root
+                page.grid.add(modelData.type)
+                page.back()
             }
         }
     }
