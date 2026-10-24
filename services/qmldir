@@ -10,3 +10,4 @@ singleton Network Network.qml
 singleton Bluetooth Bluetooth.qml
 singleton Fullscreen Fullscreen.qml
 singleton Gpu Gpu.qml
+singleton Power Power.qml

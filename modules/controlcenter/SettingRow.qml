@@ -101,6 +101,8 @@ Rectangle {
             id: below
 
             active: !root.inline
+            // An inactive Loader still takes up layout spacing
+            visible: active
             Layout.fillWidth: true
             sourceComponent: root.entry.type == "int" ? slider : textField
         }
@@ -108,7 +110,7 @@ Rectangle {
 
     Component {
         id: toggle
-
+        
         Toggle {
             checked: root.current
             onToggled: Settings.set(root.entry.key, !root.current)

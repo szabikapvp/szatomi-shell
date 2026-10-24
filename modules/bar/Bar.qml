@@ -141,7 +141,7 @@ PanelWindow {
                     id: batteryButton
                     tooltip: Battery.level + "%" + (Battery.charging ? " · Charging" : "")
 
-                    onClicked: bar.controlCenter?.togglePage(Qt.resolvedUrl("../controlcenter/PowerPage.qml"))
+                    onClicked: Power.toggleMenu()
 
                     BatteryIcon { color: batteryButton.tint }
                 }

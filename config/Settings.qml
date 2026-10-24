@@ -113,6 +113,7 @@ QtObject {
     // POWER
 
     property int powerConfirmTimeout: value("powerConfirmTimeout", 3000)
+    property real powerMenuDim: value("powerMenuDim", 0.6) // opacity of the overlay behind the menu
     property var powerCommands: ({
         lock: ["hyprlock"],
         sleep: ["systemctl", "suspend"],

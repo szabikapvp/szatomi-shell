@@ -38,6 +38,12 @@ PanelWindow {
         : panelState.right ? panel.parent.width - panel.width - marginSize : marginSize
     property real cornerY: panelState.bottom ? panel.parent.height - panel.height - marginSize : marginSize
 
+    // The power menu takes over from the panel
+    Connections {
+        target: Power
+        function onMenuOpenChanged() { if (Power.menuOpen) close() }
+    }
+
     FileView {
         path: "/tmp/toggle_menu"
         watchChanges: true
@@ -159,8 +165,12 @@ PanelWindow {
                     panel.y = panel.y
                 }
 
+                // Switching workspaces can take the pointer away mid drag, which cancels instead of releasing
+                onReleased: snapToNearest()
+                onCanceled: snapToNearest()
+
                 // Snaps to whichever of left, center and right rests closest
-                onReleased: {
+                function snapToNearest() {
                     snapFrom = Qt.point(panel.x, panel.y)
                     const restX = [marginSize, (panel.parent.width - panel.width) / 2, panel.parent.width - panel.width - marginSize]
                     const nearest = restX.reduce((best, x, i) => Math.abs(panel.x - x) < Math.abs(panel.x - restX[best]) ? i : best, 0)

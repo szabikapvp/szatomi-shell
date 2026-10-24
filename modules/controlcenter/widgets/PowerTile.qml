@@ -1,6 +1,8 @@
 import QtQuick
 import Quickshell
 
+import qs.services
+
 ButtonTile {
     id: root
 
@@ -8,6 +10,7 @@ ButtonTile {
     text: "Power"
     subtext: Quickshell.env("USER") ?? ""
 
-    // Nothing to toggle, so the icon opens the page too
-    onClicked: root.pageRequested()
+    // The whole tile opens the power menu
+    onClicked: Power.toggleMenu()
+    onPageRequested: Power.toggleMenu()
 }
