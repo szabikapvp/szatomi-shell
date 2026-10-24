@@ -31,7 +31,7 @@ FocusScope {
 
     // Same height as Button so they line up in a row
     implicitHeight: Settings.buttonHeight[size]
-    implicitWidth: 200
+    implicitWidth: Settings.px(200)
 
     Layout.fillWidth: true
 

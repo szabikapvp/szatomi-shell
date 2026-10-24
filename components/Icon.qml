@@ -14,7 +14,7 @@ Item {
 
     property bool isVisible: true
 
-    property int size: 18
+    property int size: Settings.px(18)
 
     Layout.preferredWidth: size
     Layout.preferredHeight: size

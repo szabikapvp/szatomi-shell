@@ -18,6 +18,7 @@ var maxFormatLength = 32
 
 var entries = [
     // APPEARANCE
+    { key: "uiScale", category: "Appearance", label: "Scale", description: "Size of everything in the shell", type: "choice", options: ["75%", "100%", "125%", "150%"] },
     { key: "fontFamily", category: "Appearance", label: "Font", description: "Used for all regular text", type: "font" },
     { key: "headerFont", category: "Appearance", label: "Display font", description: "Used for large numbers like the clock", type: "font" },
     { key: "fontSize", category: "Appearance", label: "Font size", description: "Buttons and the control center grid grow with it", type: "int", min: 12, max: 20, step: 1, unit: "px" },

@@ -12,7 +12,7 @@ Item {
     id: root
     property var device
 
-    Layout.preferredWidth: 400
+    Layout.preferredWidth: Settings.px(400)
     Layout.fillWidth: true
 
     property string type: "ghost"
@@ -98,7 +98,7 @@ Item {
 
                 Icon {
                     icon: Bluetooth.deviceIcon(device)
-                    size: 24
+                    size: Settings.px(24)
                     color: disabled ? Qt.darker(textColor, 1.8) : textColor
                 }
 
@@ -130,7 +130,7 @@ Item {
                             return device.paired ? "Paired" : "Not paired"
                         }
                         color: failed ? Colors.primary : Qt.darker(textColor, 1.8)
-                        font.pixelSize: Settings.fontSize - 4
+                        font.pixelSize: Settings.fontSize - Settings.px(4)
                         font.family: Settings.fontFamily
 
                         Layout.fillWidth: true

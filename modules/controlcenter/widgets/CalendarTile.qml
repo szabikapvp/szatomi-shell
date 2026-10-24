@@ -60,7 +60,7 @@ Tile {
                 text: Qt.formatDateTime(root.today, "MMMM yyyy")
                 color: Qt.alpha(Colors.text, 0.6)
                 font.family: Settings.fontFamily
-                font.pixelSize: Settings.fontSize - 2
+                font.pixelSize: Settings.fontSize - Settings.px(2)
                 elide: Text.ElideRight
                 Layout.fillWidth: true
             }
@@ -87,7 +87,7 @@ Tile {
                     text: Qt.formatDateTime(new Date(2024, 0, 7 + (root.firstWeekday + index) % 7), "ddd").slice(0, 2)
                     color: Qt.alpha(Colors.text, 0.6)
                     font.family: Settings.fontFamily
-                    font.pixelSize: Settings.fontSize - 4
+                    font.pixelSize: Settings.fontSize - Settings.px(4)
                     font.bold: true
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -126,7 +126,7 @@ Tile {
                         text: parent.day
                         color: Colors.text
                         font.family: Settings.fontFamily
-                        font.pixelSize: Settings.fontSize - 4
+                        font.pixelSize: Settings.fontSize - Settings.px(4)
                         font.bold: parent.isToday
                     }
                 }

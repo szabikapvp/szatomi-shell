@@ -43,7 +43,7 @@ Tile {
             Text {
                 text: root.label
                 color: Qt.alpha(Colors.text, 0.6)
-                font.pixelSize: Settings.fontSize - 2
+                font.pixelSize: Settings.fontSize - Settings.px(2)
                 font.family: Settings.fontFamily
                 font.bold: true
                 Layout.fillWidth: true
@@ -52,7 +52,7 @@ Tile {
             Text {
                 text: root.detail
                 color: Qt.alpha(Colors.text, 0.6)
-                font.pixelSize: Settings.fontSize - 2
+                font.pixelSize: Settings.fontSize - Settings.px(2)
                 font.family: Settings.fontFamily
             }
         }
@@ -93,7 +93,7 @@ Tile {
 
                 ctx.beginPath()
                 history.forEach((value, i) => i == 0 ? ctx.moveTo(startX, yFor(value)) : ctx.lineTo(startX + i * stepX, yFor(value)))
-                ctx.lineWidth = 2
+                ctx.lineWidth = Settings.px(2)
                 ctx.lineJoin = "round"
                 ctx.strokeStyle = root.accent
                 ctx.stroke()

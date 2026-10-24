@@ -10,7 +10,7 @@ import qs.config
 RowLayout {
     id: root
 
-    property int textWidth: 64
+    property int textWidth: Settings.px(64)
     property color color: Colors.text
 
     Text {                        

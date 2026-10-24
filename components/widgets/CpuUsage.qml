@@ -9,12 +9,12 @@ import qs.config
 
 RowLayout {
 
-    property int textWidth: 42
+    property int textWidth: Settings.px(42)
 
     Item {
 
-        Layout.preferredWidth: 18
-        Layout.preferredHeight: 18
+        Layout.preferredWidth: Settings.px(18)
+        Layout.preferredHeight: Settings.px(18)
         
         Layout.alignment: Qt.AlignVCenter
 

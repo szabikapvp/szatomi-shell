@@ -12,8 +12,8 @@ Item {
 
     property color color: Colors.text
 
-    Layout.preferredWidth: 18
-    Layout.preferredHeight: 18
+    Layout.preferredWidth: Settings.px(18)
+    Layout.preferredHeight: Settings.px(18)
     
     Layout.alignment: Qt.AlignVCenter
 
@@ -45,8 +45,8 @@ Item {
             color: root.color
             visible: Battery.isCharging()
             anchors.centerIn: parent
-            anchors.horizontalCenterOffset: -8
-            size: 14
+            anchors.horizontalCenterOffset: -Settings.px(8)
+            size: Settings.px(14)
         }
     }
 
@@ -54,7 +54,7 @@ Item {
         id: outlineMask
         anchors.fill: topLayer
         source: topLayer
-        radius: 2
+        radius: Settings.px(2)
         samples: 17
         spread: 1.0    
         color: "blue"
@@ -74,8 +74,8 @@ Item {
         color: root.color
         visible: Battery.isCharging()
         anchors.centerIn: parent
-        anchors.horizontalCenterOffset: -8
-        size: 14
+        anchors.horizontalCenterOffset: -Settings.px(8)
+        size: Settings.px(14)
     }
 
 

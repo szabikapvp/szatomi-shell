@@ -13,24 +13,30 @@ QtObject {
 
     property string wallpaper: ""
 
-    property int fontSize: value("fontSize", 16)
+    // SCALE
+
+    // Every size goes through px(), so the whole shell grows and shrinks together. Sizes are designed at 125%
+    property string uiScale: value("uiScale", "125%")
+    readonly property real scaleFactor: parseInt(uiScale) / 125
+
+    property int fontSize: px(value("fontSize", 16))
     property string fontFamily: value("fontFamily", "Space Grotesk")
     property string headerFont: value("headerFont", "Dela Gothic One")
 
-    property int windowSpacing: value("windowSpacing", 8)
-    property int spacing: value("spacing", 10)
+    property int windowSpacing: px(value("windowSpacing", 8))
+    property int spacing: px(value("spacing", 10))
 
-    property int radiusSm: value("radiusSm", 8)
-    property int radiusMd: value("radiusMd", 16)
-    property int radiusLg: value("radiusLg", 32)
+    property int radiusSm: px(value("radiusSm", 8))
+    property int radiusMd: px(value("radiusMd", 16))
+    property int radiusLg: px(value("radiusLg", 32))
 
-    property int spinnerSize: value("spinnerSize", 24)
+    property int spinnerSize: px(value("spinnerSize", 24))
 
     // BUTTON
 
     property var buttonPadding: ({ lg: spacing * 2, md: spacing, sm: spacing })
-    property var buttonFontSize: ({ lg: fontSize, md: fontSize, sm: fontSize - 2 })
-    property int buttonIconSize: value("buttonIconSize", 24)
+    property var buttonFontSize: ({ lg: fontSize, md: fontSize, sm: fontSize - px(2) })
+    property int buttonIconSize: px(value("buttonIconSize", 24))
 
     // Heights follow from the padding and the taller of icon and text, so buttons never set one explicitly
     readonly property var buttonHeight: ({
@@ -53,9 +59,9 @@ QtObject {
 
     // SCROLLBAR
 
-    property int scrollbarWidth: value("scrollbarWidth", 3)
-    property int scrollbarHoverWidth: value("scrollbarHoverWidth", 6)
-    property int scrollbarMargin: value("scrollbarMargin", 3)
+    property int scrollbarWidth: px(value("scrollbarWidth", 3))
+    property int scrollbarHoverWidth: px(value("scrollbarHoverWidth", 6))
+    property int scrollbarMargin: px(value("scrollbarMargin", 3))
 
     // ANIMATIONS
 
@@ -76,7 +82,7 @@ QtObject {
 
     // BAR
 
-    property int barHeight: value("barHeight", 44)
+    property int barHeight: px(value("barHeight", 44))
     property string barPosition: value("barPosition", "bottom")
     property bool barFloating: value("barFloating", false)
     property int workspaceCount: value("workspaceCount", 9)
@@ -96,8 +102,8 @@ QtObject {
     property int controlCenterCellSize: buttonHeight.lg + spacing * 3
     property int controlCenterPadding: spacing * 4
     property int controlCenterHoldDuration: value("controlCenterHoldDuration", 500)
-    property int controlCenterPageHeight: value("controlCenterPageHeight", 500)
-    property int settingsPageSize: value("settingsPageSize", 720)
+    property int controlCenterPageHeight: px(value("controlCenterPageHeight", 500))
+    property int settingsPageSize: px(value("settingsPageSize", 720))
     property int wifiRescanDelay: value("wifiRescanDelay", 1500)
     property int bluetoothScanDuration: value("bluetoothScanDuration", 20000)
 
@@ -113,7 +119,6 @@ QtObject {
     // POWER
 
     property int powerConfirmTimeout: value("powerConfirmTimeout", 3000)
-    property real powerMenuDim: value("powerMenuDim", 0.6) // opacity of the overlay behind the menu
     property var powerCommands: ({
         lock: ["hyprlock"],
         sleep: ["systemctl", "suspend"],
@@ -154,6 +159,15 @@ QtObject {
         const override = saved.overrides?.[key]
         if (!entry || override === undefined) return fallback
         return Schema.sanitize(entry, override) ?? fallback
+    }
+
+    function px(size) {
+        return Math.round(size * scaleFactor)
+    }
+
+    // The value as saved, before scaling, for the Settings page to show and change
+    function stored(key) {
+        return value(key, defaults[key])
     }
 
     function set(key, newValue) {

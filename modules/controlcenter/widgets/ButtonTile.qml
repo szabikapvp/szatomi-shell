@@ -116,7 +116,7 @@ Tile {
             visible: text != ""
             text: root.subtext
             color: Qt.alpha(Colors.text, 0.6)
-            font.pixelSize: Settings.fontSize - 2
+            font.pixelSize: Settings.fontSize - Settings.px(2)
             font.family: Settings.fontFamily
             elide: Text.ElideRight
             Layout.fillWidth: true

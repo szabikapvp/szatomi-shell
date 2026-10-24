@@ -10,7 +10,7 @@ Text {
     property int fontSize: Settings.fontSize
     property int weight: 700
 
-    Layout.preferredWidth: 72
+    Layout.preferredWidth: Settings.px(72)
     horizontalAlignment: Text.AlignHCenter
     verticalAlignment: Text.AlignVCenter
     text: Qt.formatDateTime(new Date(), Settings.timeFormat)

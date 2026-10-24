@@ -102,7 +102,7 @@ ColumnLayout {
                     font.family: Settings.fontFamily
                     font.weight: 300
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 64
+                    Layout.preferredHeight: Settings.px(64)
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                 }

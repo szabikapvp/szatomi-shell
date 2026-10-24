@@ -10,8 +10,8 @@ import qs.config
 PanelWindow {
     id: root
 
-    property int popupHeight: 50
-    property int popupWidth: 300
+    property int popupHeight: Settings.px(50)
+    property int popupWidth: Settings.px(300)
     property int bottom: Settings.osdYPosition
 
     property int prop: 0
@@ -71,8 +71,8 @@ PanelWindow {
             Item {}
 
             Loader {
-                Layout.preferredWidth: 18
-                Layout.preferredHeight: 18
+                Layout.preferredWidth: Settings.px(18)
+                Layout.preferredHeight: Settings.px(18)
                 
                 sourceComponent: icon
             }
@@ -88,8 +88,8 @@ PanelWindow {
                 font.pixelSize: Settings.fontSize
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
-                Layout.preferredWidth: 36
-                Layout.maximumWidth: 36
+                Layout.preferredWidth: Settings.px(36)
+                Layout.maximumWidth: Settings.px(36)
             }
 
             Item {}

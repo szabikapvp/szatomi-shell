@@ -13,7 +13,7 @@ Item {
     id: root
     property Connection conn
 
-    Layout.preferredWidth: 400
+    Layout.preferredWidth: Settings.px(400)
     Layout.fillWidth: true
 
     property string type: "ghost"
@@ -129,7 +129,7 @@ Item {
                         conn.strength > 40 ? "wifi-2" :
                         conn.strength > 20 ? "wifi-1" :
                         "wifi-0"
-                    size: 24
+                    size: Settings.px(24)
                     color: disabled ? Qt.darker(textColor, 1.8) : textColor
                 }
 
@@ -157,7 +157,7 @@ Item {
                             return conn.isSecure ? conn.security : "Open"
                         }
                         color: (conn.askingPassword && wrongPassword) ? Colors.primary : Qt.darker(textColor, 1.8)
-                        font.pixelSize: Settings.fontSize - 4
+                        font.pixelSize: Settings.fontSize - Settings.px(4)
                         font.family: Settings.fontFamily
 
                         Layout.fillWidth: true

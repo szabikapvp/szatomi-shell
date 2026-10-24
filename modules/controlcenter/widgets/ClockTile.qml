@@ -44,7 +44,7 @@ Tile {
             text: Qt.formatDateTime(clock.date, Settings.longDateFormat)
             color: Qt.alpha(Colors.text, 0.6)
             font.family: Settings.fontFamily
-            font.pixelSize: Settings.fontSize - 2
+            font.pixelSize: Settings.fontSize - Settings.px(2)
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
         }

@@ -7,7 +7,6 @@ import Quickshell.Networking
 import "./modules/bar"
 import "./modules/popup"
 import "./modules/controlcenter"
-import "./modules/powermenu"
 import "./components/widgets"
 import qs.services
 import qs.config
@@ -48,8 +47,6 @@ ShellRoot {
     }
 
     ControlCenter { id: controlCenterWindow }
-
-    PowerMenu {}
 
     Variants {
         model: Quickshell.screens

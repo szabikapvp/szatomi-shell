@@ -31,11 +31,11 @@ RowLayout {
     Text {
         text: root.title
         color: Colors.text
-        font.pixelSize: 24
+        font.pixelSize: Settings.px(24)
         font.family: Settings.fontFamily
         font.weight: 900
         Layout.fillWidth: true
-        Layout.preferredHeight: 48
+        Layout.preferredHeight: Settings.px(48)
         verticalAlignment: Text.AlignVCenter
     }
 }

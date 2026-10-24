@@ -7,7 +7,7 @@ import qs.config
 Text {
     id:root
 
-    Layout.preferredWidth: 84
+    Layout.preferredWidth: Settings.px(84)
     horizontalAlignment: Text.AlignRight
 
     text: Qt.formatDateTime(new Date(), Settings.dateFormat)

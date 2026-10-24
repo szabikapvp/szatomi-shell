@@ -5,19 +5,12 @@ import Quickshell
 
 import qs.config
 
-// Power menu state, shared so the bar and the control center can both open it
+// Runs power actions once the control center has closed. A lock screen stops its frames mid animation,
+// so the half closed panel would flash back after unlocking
 Singleton {
-    property bool menuOpen: false
     property string pending: ""
 
-    function toggleMenu() {
-        menuOpen = !menuOpen
-    }
-
-    // Waits for the menu to finish closing, since a lock screen stops its frames mid animation
-    // and the half closed menu would flash back after unlocking
     function run(action) {
-        menuOpen = false
         pending = action
         delay.restart()
     }

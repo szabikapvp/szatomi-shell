@@ -31,8 +31,8 @@ Item {
 
         x: root.knobSize / 2
         width: parent.width - root.knobSize
-        height: 6
-        radius: 3
+        height: Settings.px(6)
+        radius: Settings.px(3)
         anchors.verticalCenter: parent.verticalCenter
         color: Qt.darker(Colors.foreground, 3)
 

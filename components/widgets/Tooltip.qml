@@ -42,7 +42,7 @@ PopupWindow {
             anchors.centerIn: parent
             text: root.text
             color: Colors.text
-            font.pixelSize: Settings.fontSize - 2
+            font.pixelSize: Settings.fontSize - Settings.px(2)
             font.family: Settings.fontFamily
             font.bold: true
         }

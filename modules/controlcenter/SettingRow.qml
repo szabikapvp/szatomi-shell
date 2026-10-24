@@ -11,7 +11,7 @@ Rectangle {
     required property var entry
     property bool showCategory: false
 
-    readonly property var current: Settings[entry.key]
+    readonly property var current: Settings.stored(entry.key)
     readonly property bool modified: Settings.isModified(entry.key)
     // Small controls sit next to the label, the rest get a line of their own
     readonly property bool inline: entry.type == "bool" || entry.type == "choice"
@@ -38,13 +38,13 @@ Rectangle {
 
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 2
+                spacing: Settings.px(2)
 
                 Text {
                     visible: root.showCategory
                     text: root.entry.category
                     color: Colors.primary
-                    font.pixelSize: Settings.fontSize - 4
+                    font.pixelSize: Settings.fontSize - Settings.px(4)
                     font.family: Settings.fontFamily
                     font.bold: true
                 }
@@ -63,7 +63,7 @@ Rectangle {
                     visible: text != ""
                     text: root.entry.description ?? ""
                     color: Qt.alpha(Colors.text, 0.6)
-                    font.pixelSize: Settings.fontSize - 2
+                    font.pixelSize: Settings.fontSize - Settings.px(2)
                     font.family: Settings.fontFamily
                     wrapMode: Text.Wrap
                     Layout.fillWidth: true
@@ -189,7 +189,7 @@ Rectangle {
                 visible: !editor.isFont
                 text: "Preview: " + Qt.formatDateTime(new Date(), field.text)
                 color: Qt.alpha(Colors.text, 0.6)
-                font.pixelSize: Settings.fontSize - 2
+                font.pixelSize: Settings.fontSize - Settings.px(2)
                 font.family: Settings.fontFamily
                 elide: Text.ElideRight
                 Layout.fillWidth: true

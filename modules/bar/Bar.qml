@@ -81,9 +81,9 @@ PanelWindow {
                         property var ws: Hyprland.workspaces.values.find(w => w.id === index + 1)
                         property bool isActive: Hyprland.focusedWorkspace?.id === (index + 1)
 
-                        Layout.preferredWidth: isActive ? 30 :10
-                        Layout.preferredHeight: 10
-                        radius: 5
+                        Layout.preferredWidth: isActive ? Settings.px(30) : Settings.px(10)
+                        Layout.preferredHeight: Settings.px(10)
+                        radius: Settings.px(5)
                         color: isActive ? Colors.primary : (ws ? Colors.text : Qt.alpha(Colors.text, 0.2))
 
                         Behavior on Layout.preferredWidth {
@@ -141,7 +141,7 @@ PanelWindow {
                     id: batteryButton
                     tooltip: Battery.level + "%" + (Battery.charging ? " · Charging" : "")
 
-                    onClicked: Power.toggleMenu()
+                    onClicked: bar.controlCenter?.togglePage(Qt.resolvedUrl("../controlcenter/PowerPage.qml"))
 
                     BatteryIcon { color: batteryButton.tint }
                 }

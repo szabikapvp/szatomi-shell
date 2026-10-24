@@ -38,12 +38,6 @@ PanelWindow {
         : panelState.right ? panel.parent.width - panel.width - marginSize : marginSize
     property real cornerY: panelState.bottom ? panel.parent.height - panel.height - marginSize : marginSize
 
-    // The power menu takes over from the panel
-    Connections {
-        target: Power
-        function onMenuOpenChanged() { if (Power.menuOpen) close() }
-    }
-
     FileView {
         path: "/tmp/toggle_menu"
         watchChanges: true
@@ -183,7 +177,10 @@ PanelWindow {
 
             // The corner facing the screen corner stays small, the one the panel grows from
             radius: Settings.radiusLg
-            property int calculatedRadius: Settings.radiusLg + panelPadding
+            // Concentric with the content, pages with rounder content can ask for more
+            property int calculatedRadius: (pageLoader.item?.cornerRadius ?? Settings.radiusLg) + panelPadding
+
+            Behavior on calculatedRadius { NumberAnimation { duration: Settings.resizeDuration; easing.type: Easing.OutCubic } }
             topLeftRadius: panel.isOrigin(false, false) ? Settings.radiusSm : calculatedRadius
             topRightRadius: panel.isOrigin(true, false) ? Settings.radiusSm : calculatedRadius
             bottomLeftRadius: panel.isOrigin(false, true) ? Settings.radiusSm : calculatedRadius
