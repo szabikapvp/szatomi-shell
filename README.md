@@ -1,0 +1,1 @@
+# szatomi-shell
