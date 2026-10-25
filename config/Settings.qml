@@ -11,7 +11,22 @@ import "SettingsSchema.js" as Schema
 QtObject {
     id: root
 
-    property string wallpaper: ""
+    // THEME
+
+    // An absolute path, empty until one is picked, which shows the wallpaper pywal last set
+    property string wallpaper: value("wallpaper", "")
+    property string wallpaperFolder: value("wallpaperFolder", "~/Pictures/wallpapers")
+    property bool autoColors: value("autoColors", false)
+
+    // Used while autoColors is off
+    property color colorBackground: value("colorBackground", "#0a0a0a")
+    property color colorForeground: value("colorForeground", "#f4f1f2")
+    property color colorPrimary: value("colorPrimary", "#d71921")
+    property color colorText: value("colorText", "#f4f1f2")
+
+    property int wallpaperPageWidth: px(1200)
+    property int wallpaperThumbHeight: px(200)
+    property real wallpaperScrollSpeed: 3
 
     // SCALE
 
@@ -142,7 +157,7 @@ QtObject {
 
     // SAVED CHANGES
 
-    readonly property var schema: ({ categories: Schema.categories, entries: Schema.entries, fonts: Schema.fonts, maxFormatLength: Schema.maxFormatLength })
+    readonly property var schema: ({ categories: Schema.categories, entries: Schema.entries, fonts: Schema.fonts, maxFormatLength: Schema.maxFormatLength, sanitize: Schema.sanitize })
 
     readonly property FileView store: FileView {
         id: file

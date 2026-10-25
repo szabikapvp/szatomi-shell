@@ -10,6 +10,7 @@ ColumnLayout {
     id: root
 
     signal back()
+    signal pageRequested(url page)
 
     // Square, and wider than the grid, so the control center resizes to fit it
     readonly property int preferredWidth: Settings.settingsPageSize
@@ -96,6 +97,8 @@ ColumnLayout {
                         required property var modelData
                         entry: modelData
                         showCategory: root.query != ""
+
+                        onPageRequested: (page) => root.pageRequested(page)
                     }
                 }
 

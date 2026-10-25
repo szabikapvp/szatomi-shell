@@ -9,10 +9,15 @@
 //   choice  one of options
 //   font    an installed font family
 //   format  a Qt date/time format string, up to maxFormatLength characters
+//   path    a file or folder path, ~ allowed
+//   color   a #rrggbb color
+//   wallpaper  the current wallpaper, with a button that opens the selector
+//
+// overriddenBy names a bool setting that, while on, takes over the setting and greys its row out.
 //
 // Ranges are picked so that no combination of values breaks the layout on a 1080p screen.
 
-var categories = ["Appearance", "Layout", "Bar", "Control center", "Launcher", "Animations", "Date & time", "Input", "System"]
+var categories = ["Appearance", "Theme", "Layout", "Bar", "Control center", "Launcher", "Animations", "Date & time", "Input", "System"]
 
 var maxFormatLength = 32
 
@@ -27,6 +32,15 @@ var entries = [
     { key: "radiusMd", category: "Appearance", label: "Medium corner radius", type: "int", min: 0, max: 24, step: 1, unit: "px" },
     { key: "radiusLg", category: "Appearance", label: "Large corner radius", description: "Also rounds the control center panel", type: "int", min: 0, max: 40, step: 1, unit: "px" },
     { key: "spinnerSize", category: "Appearance", label: "Loading indicator size", type: "int", min: 16, max: 32, step: 1, unit: "px" },
+
+    // THEME
+    { key: "wallpaper", category: "Theme", label: "Wallpaper", type: "wallpaper" },
+    { key: "wallpaperFolder", category: "Theme", label: "Wallpaper folder", description: "Where the wallpaper selector looks for images", type: "path" },
+    { key: "autoColors", category: "Theme", label: "Colors from wallpaper", description: "Generate the palette with pywal whenever the wallpaper changes", type: "bool" },
+    { key: "colorBackground", category: "Theme", label: "Background", description: "Panels and the bar", type: "color", overriddenBy: "autoColors" },
+    { key: "colorForeground", category: "Theme", label: "Foreground", description: "Hover and pressed highlights, slider fills", type: "color", overriddenBy: "autoColors" },
+    { key: "colorPrimary", category: "Theme", label: "Accent", description: "Active toggles and highlights", type: "color", overriddenBy: "autoColors" },
+    { key: "colorText", category: "Theme", label: "Text", description: "Text and icons", type: "color", overriddenBy: "autoColors" },
 
     // LAYOUT
     { key: "windowSpacing", category: "Layout", label: "Window spacing", description: "Gap between floating panels and the screen edges", type: "int", min: 0, max: 16, step: 1, unit: "px" },
@@ -107,6 +121,13 @@ function sanitize(entry, value) {
 
         case "format":
             return typeof value === "string" && value.trim() !== "" && value.length <= maxFormatLength ? value : undefined
+
+        case "path":
+        case "wallpaper":
+            return typeof value === "string" && value.trim() !== "" ? value.trim() : undefined
+
+        case "color":
+            return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : undefined
     }
     return undefined
 }

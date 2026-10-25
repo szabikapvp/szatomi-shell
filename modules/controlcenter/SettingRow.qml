@@ -1,8 +1,11 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell.Widgets
 import "../../components/widgets"
 
 import qs.config
+import qs.services
+import qs.utils
 
 // One setting from the schema, with the control its type calls for and a reset once it's changed
 Rectangle {
@@ -11,8 +14,13 @@ Rectangle {
     required property var entry
     property bool showCategory: false
 
+    // Asks the control center to open a page, like the wallpaper selector
+    signal pageRequested(url page)
+
     readonly property var current: Settings.stored(entry.key)
     readonly property bool modified: Settings.isModified(entry.key)
+    // Taken over by another setting while that one is on
+    readonly property bool overridden: entry.overriddenBy !== undefined && Settings.stored(entry.overriddenBy) === true
     // Small controls sit next to the label, the rest get a line of their own
     readonly property bool inline: entry.type == "bool" || entry.type == "choice"
 
@@ -21,6 +29,9 @@ Rectangle {
 
     radius: Settings.radiusMd
     color: Colors.backgroundSubtle
+
+    enabled: !overridden
+    opacity: overridden ? 0.5 : 1
 
     ColumnLayout {
         id: content
@@ -61,7 +72,7 @@ Rectangle {
 
                 Text {
                     visible: text != ""
-                    text: root.entry.description ?? ""
+                    text: root.overridden ? "Generated from the wallpaper" : root.entry.description ?? ""
                     color: Qt.alpha(Colors.text, 0.6)
                     font.pixelSize: Settings.fontSize - Settings.px(2)
                     font.family: Settings.fontFamily
@@ -104,7 +115,7 @@ Rectangle {
             // An inactive Loader still takes up layout spacing
             visible: active
             Layout.fillWidth: true
-            sourceComponent: root.entry.type == "int" ? slider : textField
+            sourceComponent: root.entry.type == "int" ? slider : root.entry.type == "wallpaper" ? wallpaperEditor : textField
         }
     }
 
@@ -155,7 +166,57 @@ Rectangle {
         }
     }
 
-    // Fonts and formats. Typing only saves once the text is usable, anything else goes back to the saved value
+    // The current wallpaper, and the way to the selector
+    Component {
+        id: wallpaperEditor
+
+        ColumnLayout {
+            spacing: Settings.spacing
+
+            ClippingRectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: width * 9 / 16
+
+                radius: Settings.radiusSm
+                color: Colors.background
+
+                Image {
+                    anchors.fill: parent
+                    source: Wallpaper.current ? "file://" + Wallpaper.current : ""
+                    sourceSize.width: width
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Settings.spacing
+
+                Text {
+                    text: Wallpaper.current ? Wallpaper.current.split("/").pop() : "No wallpaper"
+                    color: Qt.alpha(Colors.text, 0.6)
+                    font.pixelSize: Settings.fontSize - Settings.px(2)
+                    font.family: Settings.fontFamily
+                    elide: Text.ElideMiddle
+                    Layout.fillWidth: true
+                }
+
+                Loading { visible: Wallpaper.generating }
+
+                Button {
+                    size: "sm"
+                    icon: ""
+                    text: "Change"
+                    Layout.fillWidth: false
+
+                    onClicked: root.pageRequested(Qt.resolvedUrl("WallpaperPage.qml"))
+                }
+            }
+        }
+    }
+
+    // Fonts, formats, paths and colors. Typing only saves once the text is usable, anything else goes back to the saved value
     Component {
         id: textField
 
@@ -165,28 +226,45 @@ Rectangle {
             spacing: Settings.spacing
 
             readonly property bool isFont: root.entry.type == "font"
-            // Fonts match regardless of case, and save under their real name
+            readonly property bool isColor: root.entry.type == "color"
+            // Fonts match regardless of case, and save under their real name. Colors take the # as optional
             readonly property string match: isFont
                 ? (Settings.schema.fonts.find(family => family.toLowerCase() == field.text.trim().toLowerCase()) ?? "")
-                : field.text
-            readonly property bool valid: isFont ? match != "" : field.text.trim() != "" && field.text.length <= Settings.schema.maxFormatLength
+                : isColor ? "#" + field.text.trim().replace(/^#/, "") : field.text
+            readonly property bool valid: Settings.schema.sanitize(root.entry, match) !== undefined
             readonly property bool edited: field.text != root.current
 
-            InputField {
-                id: field
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Settings.spacing
 
-                size: "md"
-                text: root.current
-                textColor: editor.valid ? Colors.text : Colors.primary
-                rightIcon: editor.edited ? (editor.valid ? "check" : "close") : ""
+                // Shows what's typed once it's a color, the saved one until then
+                Rectangle {
+                    visible: editor.isColor
+                    Layout.preferredWidth: Settings.buttonHeight.md
+                    Layout.preferredHeight: Settings.buttonHeight.md
+                    radius: Settings.radiusSm
+                    color: editor.valid ? editor.match : root.current
+                    border.width: 1
+                    border.color: Qt.alpha(Colors.foreground, 0.2)
+                }
 
-                onAccepted: editor.commit()
-                onRightIconClicked: editor.commit()
-                onActiveFocusChanged: if (!activeFocus) editor.commit()
+                InputField {
+                    id: field
+
+                    size: "md"
+                    text: root.current
+                    textColor: editor.valid ? Colors.text : Colors.primary
+                    rightIcon: editor.edited ? (editor.valid ? "check" : "close") : ""
+
+                    onAccepted: editor.commit()
+                    onRightIconClicked: editor.commit()
+                    onActiveFocusChanged: if (!activeFocus) editor.commit()
+                }
             }
 
             Text {
-                visible: !editor.isFont
+                visible: root.entry.type == "format"
                 text: "Preview: " + Qt.formatDateTime(new Date(), field.text)
                 color: Qt.alpha(Colors.text, 0.6)
                 font.pixelSize: Settings.fontSize - Settings.px(2)

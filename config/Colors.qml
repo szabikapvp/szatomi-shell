@@ -4,68 +4,58 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
+// The palette, from the colors in Settings, or from pywal's palette for the wallpaper when autoColors is on
 QtObject {
     id: root
 
-    property color background: "#1e1e2e"
-    property color backgroundSubtle: "#ffffff"
-    
-    property color foreground: "#cdd6f4"
-    property color foregroundHover: "#cdd6f4"
-    property color foregroundActive: "#cdd6f4"
+    // Parsed colors.json, null until it loads. Also tells which wallpaper pywal last ran on
+    property var pywal: null
+    readonly property bool generated: Settings.autoColors && pywal !== null
 
-    property color primary: "#ffffff"
-    property color primaryHover: "#ffffff"
-    property color primaryActive: "#ffffff"
-    
-    property color secondary:  "#f38ba8"
-    property color secondaryHover:  "#f38ba8"
-    property color secondaryActive:  "#f38ba8"
+    property color background: generated ? pywal.special.background : Settings.colorBackground
+    property color foreground: generated ? pywal.special.foreground : Settings.colorForeground
+    property color primary: generated ? accent(pywal.colors) : Settings.colorPrimary
+    property color secondary: pywal?.colors.color6 ?? "#f38ba8"
+    property color text: generated ? pywal.special.foreground : Settings.colorText
 
-    property color text:       "#ffffff"
-    property color textHover:       "#ffffff"
-    property color textActive:       "#ffffff"
+    // lighter() can't brighten pure black, so tint with the foreground instead
+    property color backgroundSubtle: Qt.tint(background, Qt.alpha(foreground, 0.07))
+
+    property color foregroundHover: Qt.darker(foreground, hover)
+    property color foregroundActive: Qt.darker(foreground, active)
+    property color primaryHover: Qt.darker(primary, hover)
+    property color primaryActive: Qt.darker(primary, active)
+    property color secondaryHover: Qt.darker(secondary, hover)
+    property color secondaryActive: Qt.darker(secondary, active)
+    property color textHover: Qt.darker(text, hover)
+    property color textActive: Qt.darker(text, active)
 
     property double hover: 1.5
     property double active: 2
 
     property FileView pywalWatcher: FileView {
-
         path: "/home/tomi/.cache/wal/colors.json"
         watchChanges: true
-        
-        onFileChanged: {
-            this.reload();
-        }
-        
+        // Loaded before the first frame, so a generated palette doesn't flash in after the custom one
+        blockLoading: true
+
+        onFileChanged: reload()
+
         onLoaded: {
             try {
-                var pywal = JSON.parse(this.text());
-                
-                root.background = "#0a0a0a" /*pywal.special.background*/;
-                root.foreground = "#f4f1f2";
-                // lighter() can't brighten pure black, so tint with the foreground instead
-                root.backgroundSubtle = Qt.tint(root.background, Qt.alpha(root.foreground, 0.07))
-                root.foregroundHover = Qt.darker(root.foreground, root.hover);
-                root.foregroundActive = Qt.darker(root.foreground, root.active);
-                
-                root.primary = "#D71921"; 
-                root.primaryHover = Qt.darker(root.primary, root.hover); 
-                root.primaryActive = Qt.darker(root.primary, root.active); 
-
-                root.secondary = pywal.colors.color6;
-                root.secondaryHover = Qt.darker(root.secondary, root.hover);
-                root.secondaryActive = Qt.darker(root.secondary, root.active);
-
-                root.text = "#f4f1f2";
-                root.textHover = Qt.darker(root.text, root.hover);
-                root.textActive = Qt.darker(root.text, root.active);
-
-                Settings.wallpaper = "file://" + pywal.wallpaper;
-
+                root.pywal = JSON.parse(text())
             } catch (e) {
-                console.log("Could not load or parse Pywal colors: " + e);
+                console.log("Could not load or parse Pywal colors: " + e)
             }
         }
+    }
+
+    Component.onCompleted: pywalWatcher.text()
+
+    // The most saturated of the palette's main colors, so the accent stands out on any wallpaper
+    function accent(colors) {
+        return [1, 2, 3, 4, 5, 6]
+            .map(i => Qt.color(colors["color" + i]))
+            .reduce((best, color) => color.hslSaturation > best.hslSaturation ? color : best)
     }
 }

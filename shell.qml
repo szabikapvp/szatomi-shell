@@ -31,7 +31,7 @@ ShellRoot {
 
         Image {
             anchors.fill: parent
-            source: Settings.wallpaper            
+            source: Wallpaper.current ? "file://" + Wallpaper.current : ""
             fillMode: Image.PreserveAspectCrop 
         }
     }

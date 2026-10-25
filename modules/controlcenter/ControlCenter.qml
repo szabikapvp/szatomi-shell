@@ -284,6 +284,7 @@ PanelWindow {
 
                     function onBack() { root.back() }
                     function onCloseRequested() { root.close() }
+                    function onPageRequested(page) { root.openPage(page) }
                 }
             }
         }
@@ -295,7 +296,9 @@ PanelWindow {
 
     // Steps back from a page, then out of editing, then closes
     function back() {
-        if (pageLoader.item && directPage) close()
+        // Pages opened from another page go back to it
+        if (pageLoader.item?.parentPage) openPage(pageLoader.item.parentPage, pageLoader.item.parentProperties ?? {})
+        else if (pageLoader.item && directPage) close()
         else if (pageLoader.item) {
             pageLoader.source = ""
             mainPage.forceActiveFocus()

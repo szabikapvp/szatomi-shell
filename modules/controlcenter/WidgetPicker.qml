@@ -15,9 +15,8 @@ ColumnLayout {
 
     readonly property var available: grid.catalog.entries.filter(entry => !grid.widgets.some(w => w.type === entry.type))
 
-    readonly property real cardWidth: (width - Settings.spacing) / 2
     // A widget as wide as the grid fills its card
-    readonly property real previewScale: (cardWidth - Settings.spacing * 2) / grid.implicitWidth
+    readonly property real previewScale: (width - Settings.spacing * 2) / grid.implicitWidth
 
     height: Settings.controlCenterPageHeight
     spacing: Settings.spacing * 2
@@ -50,8 +49,7 @@ ColumnLayout {
             id: cards
 
             width: scrollView.availableWidth
-            columns: 2
-            columnSpacing: Settings.spacing
+            columns: 1
             rowSpacing: Settings.spacing
 
             Repeater {
@@ -65,8 +63,7 @@ ColumnLayout {
                     // Without room, shown at its first size instead
                     readonly property var size: spot ? [spot.w, spot.h] : root.grid.sizesOf(modelData)[0]
 
-                    Layout.preferredWidth: root.cardWidth
-                    Layout.fillHeight: true
+                    Layout.fillWidth: true
                     implicitHeight: content.implicitHeight + Settings.spacing * 2
 
                     radius: Settings.radiusLg
