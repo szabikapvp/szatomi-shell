@@ -17,9 +17,6 @@ Item {
     property bool fromBottom: parent ? y + height / 2 > parent.height / 2 : true
     // Grows from the middle of the edge instead, overriding fromRight
     property bool fromCenter: false
-    // Grows from its very middle, overriding all of the above
-    property bool fromMiddle: false
-    readonly property bool centerX: fromCenter || fromMiddle
 
     // Eases towards the real size, the mask follows it
     property real shownWidth: width
@@ -48,8 +45,8 @@ Item {
 
     // Where the real size sits inside the content, at the origin corner. Place the actual contents here,
     // so they don't jump when a held size is released
-    readonly property real contentX: centerX ? (visibleWidth - width) / 2 : fromRight ? visibleWidth - width : 0
-    readonly property real contentY: fromMiddle ? (visibleHeight - height) / 2 : fromBottom ? visibleHeight - height : 0
+    readonly property real contentX: fromCenter ? (visibleWidth - width) / 2 : fromRight ? visibleWidth - width : 0
+    readonly property real contentY: fromBottom ? visibleHeight - height : 0
 
     // Only mask while animating, so the content renders natively at rest
     readonly property bool masking: progress < 1 || shownWidth != width || shownHeight != height
@@ -59,8 +56,8 @@ Item {
 
         width: root.visibleWidth
         height: root.visibleHeight
-        x: root.centerX ? (root.width - width) / 2 : root.fromRight ? root.width - width : 0
-        y: root.fromMiddle ? (root.height - height) / 2 : root.fromBottom ? root.height - height : 0
+        x: root.fromCenter ? (root.width - width) / 2 : root.fromRight ? root.width - width : 0
+        y: root.fromBottom ? root.height - height : 0
     }
 
     // Kept alive instead of a toggled layer.effect, which rebuilds the effect at the start of every animation
@@ -86,8 +83,8 @@ Item {
         property var source: contentSource
         property size itemSize: Qt.size(width, height)
         property vector4d maskRect: Qt.vector4d(
-            root.centerX ? (width - maskWidth) / 2 : root.fromRight ? width - maskWidth : 0,
-            root.fromMiddle ? (height - maskHeight) / 2 : root.fromBottom ? height - maskHeight : 0,
+            root.fromCenter ? (width - maskWidth) / 2 : root.fromRight ? width - maskWidth : 0,
+            root.fromBottom ? height - maskHeight : 0,
             maskWidth, maskHeight)
 
         // The origin corner sits on the content's own corner, so leave its rounding to the content
@@ -107,9 +104,9 @@ Item {
         duration: Settings.popDuration
     }
 
-    // The corner it grows from. Growing from a middle has none, so every corner stays round
+    // The corner it grows from. Growing from an edge's middle has none, so every corner stays round
     function isOrigin(right, bottom) {
-        return !centerX && fromBottom == bottom && fromRight == right
+        return !fromCenter && fromBottom == bottom && fromRight == right
     }
 
     function popIn() {

@@ -111,11 +111,12 @@ QtObject {
 
     property int launcherWidth: px(value("launcherWidth", 440))
     property int launcherHeight: px(value("launcherHeight", 360))
-    property int launcherIconSize: px(value("launcherIconSize", 24))
+    property int launcherFontSize: fontSize + px(2)
+    // App icons stay twice the height of their name
+    property int launcherIconSize: launcherFontSize * 2
     readonly property int launcherItemHeight: launcherIconSize + spacing * 2
     // Tighter than the control center, the panel's corners shrink with it
     property int launcherPadding: spacing * 4
-    property real launcherDim: value("launcherDim", 30) / 100
     // Apps marked to run in a terminal are started through this, with their command appended
     property list<string> launcherTerminal: ["kitty", "-e"]
 

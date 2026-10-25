@@ -26,27 +26,28 @@ PanelWindow {
     property bool showing: false
     visible: panel.progress > 0
 
-    // Pages can ask for the middle of the screen, the panel slides there from its corner
-    readonly property bool centered: pageLoader.item?.centered ?? false
     readonly property url launcherPage: Qt.resolvedUrl("LauncherPage.qml")
-    // Opened by the launcher shortcut, so leaving the launcher closes instead of showing the grid
-    property bool launcherOnly: false
+    readonly property bool launcherOpen: pageLoader.source.toString() === launcherPage.toString()
+    // Kept until the panel hides, since Hyprland drops the focus when a layer stops being exclusive
+    property bool keyboardGrabbed: false
+    onLauncherOpenChanged: if (launcherOpen) keyboardGrabbed = true
+    // Opened straight to a page, so going back closes instead of showing a grid nobody asked for
+    property bool directPage: false
 
     // Pages and editing end once the panel is fully hidden, so nothing changes mid animation
     onVisibleChanged: {
         if (visible) return
         pageLoader.source = ""
         grid.editing = false
-        launcherOnly = false
+        keyboardGrabbed = false
+        directPage = false
     }
 
     // Resting position for the remembered snap point: a corner, or the middle of the top or bottom edge
-    property real cornerX: panelState.center || centered
+    property real cornerX: panelState.center
         ? (panel.parent.width - panel.width) / 2
         : panelState.right ? panel.parent.width - panel.width - marginSize : marginSize
-    property real cornerY: centered
-        ? (panel.parent.height - panel.height) / 2
-        : panelState.bottom ? panel.parent.height - panel.height - marginSize : marginSize
+    property real cornerY: panelState.bottom ? panel.parent.height - panel.height - marginSize : marginSize
 
     FileView {
         path: "/tmp/toggle_menu"
@@ -62,7 +63,7 @@ PanelWindow {
         path: "/tmp/toggle_launcher"
         watchChanges: true
 
-        onFileChanged: toggleLauncher()
+        onFileChanged: togglePage(launcherPage)
     }
 
     // Remembers the snap point across restarts
@@ -90,14 +91,13 @@ PanelWindow {
         right: true
     }
 
-    // Centered pages take the clicks around them too, so clicking outside closes
-    mask: Region { item: centered ? outside : panel }
+    mask: Region { item: panel }
 
     WlrLayershell.layer: WlrLayer.Overlay
     exclusionMode: Fullscreen.exclusionMode(screen)
 
     // The launcher can open from a shortcut, so it takes the keyboard right away like wofi
-    WlrLayershell.keyboardFocus: centered ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand
+    WlrLayershell.keyboardFocus: keyboardGrabbed ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand
 
     color: "transparent"
     aboveWindows: true
@@ -134,47 +134,6 @@ PanelWindow {
         }
     }
 
-    // Dims the screen behind centered pages, the bar too, so it's a window of its own on the bar's layer
-    // that ignores the bar's space. Showing up after the bar keeps it on top of it. Clicks on it close
-    PanelWindow {
-        screen: root.screen
-        visible: dim.opacity > 0
-
-        anchors {
-            top: true
-            bottom: true
-            left: true
-            right: true
-        }
-
-        exclusionMode: ExclusionMode.Ignore
-        color: "transparent"
-
-        Rectangle {
-            id: dim
-
-            anchors.fill: parent
-            color: Colors.background
-            opacity: centered && showing ? Settings.launcherDim : 0
-
-            Behavior on opacity { NumberAnimation { duration: Settings.popDuration; easing.type: Easing.OutCubic } }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: root.close()
-            }
-        }
-    }
-
-    // The dim window can't catch these while this one holds the keyboard exclusively
-    MouseArea {
-        id: outside
-
-        anchors.fill: parent
-        enabled: centered
-        onClicked: root.close()
-    }
-
     PopMask {
         id: panel
 
@@ -186,7 +145,6 @@ PanelWindow {
         fromRight: panelState.right
         fromBottom: panelState.bottom
         fromCenter: panelState.center
-        fromMiddle: centered
         radius: Settings.radiusLg
 
         Rectangle {
@@ -201,15 +159,12 @@ PanelWindow {
             // Only reachable on empty parts, the content on top takes its own clicks
             MouseArea {
                 anchors.fill: parent
-                // Centered pages stay in the middle, and a snap there would overwrite the remembered corner
-                enabled: !centered
                 drag.target: panel
                 drag.minimumX: 0
                 drag.minimumY: 0
                 drag.maximumX: panel.parent.width - panel.width
                 drag.maximumY: panel.parent.height - panel.height
-                // A disabled MouseArea still sets its cursor, so unset it to leave the default
-                cursorShape: !enabled ? undefined : pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+                cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
                 pressAndHoldInterval: Settings.controlCenterHoldDuration
 
                 // Holding still on empty space edits the grid, same as holding a widget
@@ -335,32 +290,14 @@ PanelWindow {
     }
 
     function openPage(page, properties = {}) {
-        morph(() => pageLoader.setSource(page, properties))
-    }
-
-    // Runs a page change, sliding between the corner and the middle when that flips. The slide starts with
-    // the edge the panel grows from where it was, so the visible panel doesn't jump on the first frame
-    function morph(change) {
-        const wasCentered = centered
-        const from = Qt.rect(panel.x, panel.y, panel.width, panel.height)
-        change()
-        if (!showing || centered == wasCentered) return
-
-        snapFrom = Qt.point(
-            panel.centerX ? from.x + (from.width - panel.width) / 2
-                : panel.fromRight ? from.x + from.width - panel.width : from.x,
-            panel.fromMiddle ? from.y + (from.height - panel.height) / 2
-                : panel.fromBottom ? from.y + from.height - panel.height : from.y)
-        panel.x = snapFrom.x
-        panel.y = snapFrom.y
-        snap.restart()
+        pageLoader.setSource(page, properties)
     }
 
     // Steps back from a page, then out of editing, then closes
     function back() {
-        if (launcherOnly) close()
+        if (pageLoader.item && directPage) close()
         else if (pageLoader.item) {
-            morph(() => pageLoader.source = "")
+            pageLoader.source = ""
             mainPage.forceActiveFocus()
         }
         else if (grid.editing) grid.editing = false
@@ -385,19 +322,6 @@ PanelWindow {
         }
     }
 
-    // Opens straight to the launcher, growing from the middle, or turns the open panel into it
-    function toggleLauncher() {
-        if (panel.running) return
-
-        if (!showing) {
-            launcherOnly = true
-            openPage(launcherPage)
-            open()
-        }
-        else if (centered) close()
-        else openPage(launcherPage)
-    }
-
     // Opens straight to a page, or closes when that page is already showing
     function togglePage(page) {
         if (showing && pageLoader.source.toString() === page.toString()) {
@@ -407,6 +331,7 @@ PanelWindow {
 
         // Mid animation the panel ignores open() and close(), so leave the page alone too
         if (panel.running) return
+        if (!showing) directPage = true
         open()
         openPage(page)
     }

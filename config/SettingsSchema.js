@@ -53,8 +53,6 @@ var entries = [
     // LAUNCHER
     { key: "launcherWidth", category: "Launcher", label: "Width", type: "int", min: 360, max: 800, step: 10, unit: "px" },
     { key: "launcherHeight", category: "Launcher", label: "Height", type: "int", min: 300, max: 700, step: 10, unit: "px" },
-    { key: "launcherIconSize", category: "Launcher", label: "App icon size", type: "int", min: 24, max: 48, step: 1, unit: "px" },
-    { key: "launcherDim", category: "Launcher", label: "Background dimming", description: "How much the screen darkens behind the launcher", type: "int", min: 0, max: 80, step: 5, unit: "%" },
 
     // ANIMATIONS
     { key: "popDuration", category: "Animations", label: "Pop duration", description: "Opening and closing panels", type: "int", min: 50, max: 500, step: 10, unit: "ms" },

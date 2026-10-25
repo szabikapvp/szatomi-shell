@@ -14,8 +14,6 @@ ColumnLayout {
     // Typed before the page opened, so the first key isn't lost
     property string query: ""
 
-    // Asks the control center for the middle of the screen
-    readonly property bool centered: true
     readonly property int preferredWidth: Settings.launcherWidth
     readonly property int panelPadding: Settings.launcherPadding
     readonly property var results: Apps.search(searchField.text)

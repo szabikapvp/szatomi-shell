@@ -31,8 +31,9 @@ Item {
     readonly property var shown: preview ?? widgets
     property string activeType: ""
 
-    // Editing shows every row, so there's room to move things into
-    readonly property int rows: editing ? maxRows : Math.max(1, ...shown.map(w => w.y + w.h))
+    // Editing shows every row, so there's room to move things into. Otherwise empty rows above and below are left out
+    readonly property int firstRow: editing || shown.length === 0 ? 0 : Math.min(...shown.map(w => w.y))
+    readonly property int rows: editing ? maxRows : Math.max(1, Math.max(...shown.map(w => w.y + w.h)) - firstRow)
 
     implicitWidth: columns * pitch - gap
     implicitHeight: rows * pitch - gap
@@ -105,7 +106,7 @@ Item {
             property point dragPos
 
             x: dragging ? dragPos.x : rect.x * root.pitch
-            y: dragging ? dragPos.y : rect.y * root.pitch
+            y: dragging ? dragPos.y : (rect.y - root.firstRow) * root.pitch
             width: rect.w * root.pitch - root.gap
             height: rect.h * root.pitch - root.gap
             z: dragging ? 1 : 0

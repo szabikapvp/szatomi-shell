@@ -51,7 +51,7 @@ Rectangle {
         Text {
             text: root.entry.name
             color: Colors.text
-            font.pixelSize: Settings.fontSize
+            font.pixelSize: Settings.launcherFontSize
             font.family: Settings.fontFamily
             font.bold: root.selected
             elide: Text.ElideRight

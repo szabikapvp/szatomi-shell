@@ -7,7 +7,7 @@ import qs.config
 QtObject {
     readonly property var buttonSizes: range(1, Settings.controlCenterColumns).map(w => [w, 1])
     readonly property var sliderSizes: range(2, Settings.controlCenterMaxRows).map(h => [1, h]).concat(buttonSizes)
-    readonly property var panelSizes: [[2, 2], [4, 2], [2, 4]]
+    readonly property var panelSizes: [[2, 2], [2, 3], [3, 2], [4, 2], [2, 4]]
     // Wide enough for its placeholder first, a lone icon only when nothing else fits
     readonly property var searchSizes: buttonSizes.slice(1).concat(buttonSizes.slice(0, 1))
 
