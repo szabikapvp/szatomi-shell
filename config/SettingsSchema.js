@@ -14,14 +14,18 @@
 //   wallpaper  the current wallpaper, with a button that opens the selector
 //   mixer      volume of every app that's playing. Stores nothing
 //   devices    output devices, or input devices with input: true, each opening its own page. Stores nothing
+//   shortcut   a key combo as Hyprland writes it, like SUPER + I, recorded by pressing it
 //
 // overriddenBy names a bool setting that, while on, takes over the setting and greys its row out.
 //
 // Ranges are picked so that no combination of values breaks the layout on a 1080p screen.
 
-var categories = ["Appearance", "Theme", "Layout", "Bar", "Control center", "Launcher", "Audio", "Animations", "Date & time", "Input", "System"]
+var categories = ["Appearance", "Theme", "Layout", "Bar", "Control center", "Launcher", "Audio", "Animations", "Date & time", "Input", "Shortcuts", "System"]
 
 var maxFormatLength = 32
+
+// Modifiers, then one key: a name like I, F5 or Page_Up, or code:N for a raw keycode
+var shortcutPattern = /^((SUPER|CTRL|ALT|SHIFT) \+ )*[A-Za-z0-9_]+$|^((SUPER|CTRL|ALT|SHIFT) \+ )*code:[0-9]+$/
 
 var entries = [
     // APPEARANCE
@@ -90,6 +94,12 @@ var entries = [
     { key: "backSwipeThreshold", category: "Input", label: "Back swipe distance", description: "How far to swipe right with two fingers to go back", type: "int", min: 60, max: 300, step: 10, unit: "px" },
     { key: "backSwipeResetDelay", category: "Input", label: "Back swipe reset", description: "Pause that ends a swipe", type: "int", min: 100, max: 1000, step: 50, unit: "ms" },
 
+    // SHORTCUTS
+    { key: "shortcutControlCenter", category: "Shortcuts", label: "Control center", description: "Opens or closes the control center", type: "shortcut" },
+    { key: "shortcutLauncher", category: "Shortcuts", label: "App launcher", description: "Type > in it for commands", type: "shortcut" },
+    { key: "shortcutSettings", category: "Shortcuts", label: "Settings", description: "Opens the settings", type: "shortcut" },
+    { key: "shortcutWallpaper", category: "Shortcuts", label: "Change wallpaper", description: "Opens the wallpaper selector", type: "shortcut" },
+
     // SYSTEM
     { key: "cpuHotTemp", category: "System", label: "CPU hot temperature", description: "From here on the CPU temperature turns red", type: "int", min: 60, max: 95, step: 1, unit: "°C" },
     { key: "brightnessMin", category: "System", label: "Minimum brightness", description: "Lowest level the brightness slider can set", type: "int", min: 5, max: 30, step: 1, unit: "%" },
@@ -132,6 +142,9 @@ function sanitize(entry, value) {
         case "path":
         case "wallpaper":
             return typeof value === "string" && value.trim() !== "" ? value.trim() : undefined
+
+        case "shortcut":
+            return typeof value === "string" && shortcutPattern.test(value) ? value : undefined
 
         case "color":
             return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : undefined

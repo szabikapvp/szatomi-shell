@@ -32,7 +32,6 @@ RowLayout {
 
     ColumnLayout {
         Layout.fillWidth: true
-        Layout.minimumHeight: Settings.px(48)
         spacing: 0
 
         Text {
@@ -54,7 +53,8 @@ RowLayout {
             font.weight: 900
             elide: Text.ElideRight
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            // A fixed height, filling would make the whole header take a share of the page's spare room
+            Layout.preferredHeight: root.path != "" ? implicitHeight : Settings.px(48)
             verticalAlignment: Text.AlignVCenter
         }
     }

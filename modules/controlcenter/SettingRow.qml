@@ -116,7 +116,7 @@ Rectangle {
             // An inactive Loader still takes up layout spacing
             visible: active
             Layout.fillWidth: true
-            sourceComponent: ({ int: slider, wallpaper: wallpaperEditor, mixer: mixer, devices: devices })[root.entry.type] ?? textField
+            sourceComponent: ({ int: slider, wallpaper: wallpaperEditor, mixer: mixer, devices: devices, shortcut: shortcut })[root.entry.type] ?? textField
         }
     }
 
@@ -213,6 +213,112 @@ Rectangle {
 
                     onClicked: root.pageRequested(Qt.resolvedUrl("WallpaperPage.qml"), { fromSettings: true })
                 }
+            }
+        }
+    }
+
+    // The combo as key caps. Change hands the keyboard to the row until a usable combo is pressed,
+    // Escape cancels, and anything unusable is explained without saving
+    Component {
+        id: shortcut
+
+        ColumnLayout {
+            id: recorder
+
+            readonly property bool recording: Shortcuts.recording == root.entry.key
+            readonly property string problem: Shortcuts.messageKey == root.entry.key ? Shortcuts.message : ""
+            readonly property bool blocked: Shortcuts.configRead && Shortcuts.usedByConfig(root.current)
+
+            spacing: Settings.spacing
+
+            Keys.onPressed: (event) => {
+                if (!recording || event.isAutoRepeat) return
+                Shortcuts.press(event)
+                event.accepted = true
+            }
+            Keys.onReleased: (event) => {
+                if (!recording || event.isAutoRepeat) return
+                Shortcuts.release(event)
+                event.accepted = true
+            }
+
+            // Clicking or tabbing away cancels, so the keyboard never stays taken
+            onActiveFocusChanged: if (!activeFocus && recording) Shortcuts.stopRecording()
+            Component.onDestruction: if (recording) Shortcuts.stopRecording()
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Settings.spacing / 2
+
+                Repeater {
+                    model: recorder.recording ? [] : Shortcuts.keys(root.current)
+
+                    Rectangle {
+                        required property string modelData
+
+                        implicitWidth: Math.max(implicitHeight, capText.implicitWidth + Settings.spacing * 2)
+                        implicitHeight: Settings.buttonHeight.sm
+                        radius: Settings.radiusSm
+                        color: Qt.alpha(Colors.foreground, 0.1)
+                        border.width: 1
+                        border.color: Qt.alpha(Colors.foreground, 0.2)
+                        opacity: recorder.blocked ? 0.5 : 1
+
+                        Text {
+                            id: capText
+                            anchors.centerIn: parent
+                            text: parent.modelData
+                            color: Colors.text
+                            font.pixelSize: Settings.fontSize - Settings.px(2)
+                            font.family: Settings.fontFamily
+                            font.bold: true
+                        }
+                    }
+                }
+
+                Text {
+                    visible: recorder.recording
+                    text: "Press the new shortcut · Esc to cancel"
+                    color: Colors.primary
+                    font.pixelSize: Settings.fontSize - Settings.px(2)
+                    font.family: Settings.fontFamily
+                    font.bold: true
+                    elide: Text.ElideRight
+                    Layout.preferredHeight: Settings.buttonHeight.sm
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                Item { Layout.fillWidth: true }
+
+                Button {
+                    size: "sm"
+                    icon: ""
+                    text: recorder.recording ? "Cancel" : "Change"
+                    type: recorder.recording ? "ghost" : "primary"
+                    textColor: recorder.recording ? Colors.text : Colors.background
+                    Layout.fillWidth: false
+
+                    onClicked: {
+                        if (recorder.recording) {
+                            Shortcuts.stopRecording()
+                            return
+                        }
+                        Shortcuts.startRecording(root.entry.key)
+                        recorder.forceActiveFocus()
+                    }
+                }
+            }
+
+            Text {
+                visible: text != ""
+                text: recorder.problem != "" ? recorder.problem
+                    : recorder.blocked ? "Your Hyprland config already uses " + Shortcuts.format(root.current) + ", so this one is off until it's changed"
+                    : ""
+                color: Colors.primary
+                font.pixelSize: Settings.fontSize - Settings.px(2)
+                font.family: Settings.fontFamily
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
             }
         }
     }

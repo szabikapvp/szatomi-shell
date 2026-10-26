@@ -14,7 +14,7 @@ QtObject {
 
     property color background: generated ? pywal.special.background : Settings.colorBackground
     property color foreground: generated ? pywal.special.foreground : Settings.colorForeground
-    property color primary: generated ? accent(pywal.colors) : Settings.colorPrimary
+    property color primary: generated ? readable(accent(pywal.colors), pywal.special.foreground) : Settings.colorPrimary
     property color secondary: pywal?.colors.color6 ?? "#f38ba8"
     property color text: generated ? pywal.special.foreground : Settings.colorText
 
@@ -57,5 +57,30 @@ QtObject {
         return [1, 2, 3, 4, 5, 6]
             .map(i => Qt.color(colors["color" + i]))
             .reduce((best, color) => color.hslSaturation > best.hslSaturation ? color : best)
+    }
+
+    // Pastel palettes give an accent about as light as the text on it, so its lightness is moved
+    // away from the text's, keeping the hue, until the two reach Settings.accentContrast
+    function readable(color, textColor) {
+        // pywal's colors arrive as strings
+        const text = Qt.color(textColor)
+        const away = luminance(text) > luminance(color) ? -0.02 : 0.02
+        let result = color
+        while (contrast(result, text) < Settings.accentContrast && result.hslLightness > 0 && result.hslLightness < 1)
+            result = Qt.hsla(result.hslHue, result.hslSaturation, Math.max(0, Math.min(1, result.hslLightness + away)), 1)
+        return result
+    }
+
+    // WCAG relative luminance and contrast ratio
+    function luminance(value) {
+        const color = Qt.color(value)
+        const linear = value => value <= 0.03928 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4)
+        return 0.2126 * linear(color.r) + 0.7152 * linear(color.g) + 0.0722 * linear(color.b)
+    }
+
+    function contrast(a, b) {
+        const la = luminance(a)
+        const lb = luminance(b)
+        return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
     }
 }

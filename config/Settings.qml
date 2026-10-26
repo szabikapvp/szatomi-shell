@@ -27,6 +27,8 @@ QtObject {
     property int wallpaperPageWidth: px(1200)
     property int wallpaperThumbHeight: px(200)
     property real wallpaperScrollSpeed: 3
+    // Least contrast (WCAG ratio) between a generated accent and the text drawn on it. 3 is the minimum for icons and bold text
+    property real accentContrast: 3
 
     // SCALE
 
@@ -94,6 +96,16 @@ QtObject {
     property int backSwipeThreshold: value("backSwipeThreshold", 120)
     property int backSwipeResetDelay: value("backSwipeResetDelay", 300)
     property bool naturalScroll: value("naturalScroll", true) // match the compositor's touchpad setting
+
+    // SHORTCUTS
+
+    // Written the way Hyprland binds them. SUPER + SUPER_L is a tap of the Super key on its own
+    property string shortcutControlCenter: value("shortcutControlCenter", "SUPER + SUPER_L")
+    property string shortcutLauncher: value("shortcutLauncher", "SUPER + R")
+    property string shortcutSettings: value("shortcutSettings", "SUPER + I")
+    property string shortcutWallpaper: value("shortcutWallpaper", "SUPER + W")
+    // Recording a new shortcut gives up after this long, handing the keyboard back to Hyprland
+    property int shortcutRecordTimeout: 10000
 
     // BAR
 

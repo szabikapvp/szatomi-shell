@@ -49,26 +49,22 @@ PanelWindow {
         : panelState.right ? panel.parent.width - panel.width - marginSize : marginSize
     property real cornerY: panelState.bottom ? panel.parent.height - panel.height - marginSize : marginSize
 
+    // Shortcuts from Settings. Touching these files does the same, for scripts
+    Connections {
+        target: Shortcuts
+        function onTriggered(action) { root.runShortcut(action) }
+    }
+
     FileView {
         path: "/tmp/toggle_menu"
         watchChanges: true
-
-        // Comes from a keybind, so the panel takes the keyboard like the launcher does
-        onFileChanged: {
-            if (showing) {
-                close()
-                return
-            }
-            keyboardGrabbed = true
-            open()
-        }
+        onFileChanged: root.runShortcut("controlcenter")
     }
 
     FileView {
         path: "/tmp/toggle_launcher"
         watchChanges: true
-
-        onFileChanged: togglePage(launcherPage)
+        onFileChanged: root.runShortcut("launcher")
     }
 
     // Remembers the snap point across restarts
@@ -364,6 +360,26 @@ PanelWindow {
         if (!showing) directPage = true
         open()
         openPage(page, properties)
+    }
+
+    // Came from the keyboard, so the panel takes it like the launcher does
+    function runShortcut(action) {
+        if (action == "controlcenter") {
+            if (showing) {
+                close()
+                return
+            }
+            keyboardGrabbed = true
+            open()
+            return
+        }
+
+        keyboardGrabbed = true
+        switch (action) {
+            case "launcher": togglePage(launcherPage); break
+            case "settings": togglePage(Qt.resolvedUrl("SettingsPage.qml")); break
+            case "wallpaper": togglePage(Qt.resolvedUrl("WallpaperPage.qml")); break
+        }
     }
 
     function toggle() {
