@@ -17,7 +17,7 @@ QtObject {
         { type: "settings", name: "Settings", icon: "settings", tile: Qt.resolvedUrl("SettingsTile.qml"), page: Qt.resolvedUrl("../SettingsPage.qml"), sizes: buttonSizes },
         { type: "power", name: "Power", icon: "power", tile: Qt.resolvedUrl("PowerTile.qml"), page: Qt.resolvedUrl("../PowerPage.qml"), sizes: buttonSizes },
         { type: "search", name: "Search", icon: "search", tile: Qt.resolvedUrl("SearchTile.qml"), page: Qt.resolvedUrl("../LauncherPage.qml"), sizes: searchSizes },
-        { type: "volume", name: "Volume", icon: "volume-2", tile: Qt.resolvedUrl("VolumeTile.qml"), sizes: sliderSizes },
+        { type: "volume", name: "Volume", icon: "volume-2", tile: Qt.resolvedUrl("VolumeTile.qml"), page: Qt.resolvedUrl("../SettingsPage.qml"), pageProperties: { category: "Audio" }, sizes: sliderSizes },
         { type: "brightness", name: "Brightness", icon: "brightness-3", tile: Qt.resolvedUrl("BrightnessTile.qml"), sizes: sliderSizes },
         { type: "cpu", name: "CPU", icon: "cpu", tile: Qt.resolvedUrl("CpuTile.qml"), sizes: panelSizes },
         { type: "ram", name: "RAM", icon: "ram", tile: Qt.resolvedUrl("RamTile.qml"), sizes: panelSizes },

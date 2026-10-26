@@ -15,6 +15,9 @@ Tile {
 
     radius: height / 2
 
+    interactive: true
+    onActivated: pageRequested()
+
     Rectangle {
         anchors.fill: parent
         radius: parent.radius

@@ -7,7 +7,8 @@ import "../../components/widgets"
 import qs.config
 import qs.services
 
-// App launcher, works like wofi: type to filter, arrows or Tab to pick, Enter or a click to launch
+// App launcher, works like wofi: type to filter, arrows or Tab to pick, Enter or a click to launch.
+// Starting with ">" searches the shell's commands instead
 ColumnLayout {
     id: root
 
@@ -16,27 +17,71 @@ ColumnLayout {
 
     readonly property int preferredWidth: Settings.launcherWidth
     readonly property int panelPadding: Settings.launcherPadding
-    readonly property var results: Apps.search(searchField.text)
+    readonly property bool commandMode: searchField.text.startsWith(">")
+    readonly property var results: commandMode ? commands.search(searchField.text.slice(1)) : Apps.search(searchField.text)
     // Starts on the best match for every search, like wofi
     property int selected: 0
-    onResultsChanged: selected = 0
+    onResultsChanged: {
+        selected = 0
+        armed = ""
+    }
+
+    // Keyword of the command waiting for a second Enter
+    property string armed: ""
+
     onSelectedChanged: list.positionViewAtIndex(selected, ListView.Contain)
 
     signal back()
     signal closeRequested()
+    signal pageRequested(url page, var properties)
+
+    Commands { id: commands }
+
+    ScriptModel {
+        id: appModel
+        values: root.commandMode ? [] : root.results
+    }
+
+    ScriptModel {
+        id: commandModel
+        values: root.commandMode ? root.results : []
+    }
+
+    Timer {
+        id: disarm
+        interval: Settings.powerConfirmTimeout
+        onTriggered: root.armed = ""
+    }
 
     height: Settings.launcherHeight
     spacing: Settings.spacing
 
-    Component.onCompleted: {
-        searchField.text = query
-        searchField.forceActiveFocus()
-    }
+    readonly property Item initialFocus: searchField
+    Component.onCompleted: searchField.text = query
 
     function launch(index) {
         if (index < 0 || index >= results.length) return
+        if (commandMode) {
+            run(results[index])
+            return
+        }
         Apps.launch(results[index])
         closeRequested()
+    }
+
+    function run(command) {
+        if (command.confirm && armed != command.keyword) {
+            armed = command.keyword
+            disarm.restart()
+            return
+        }
+
+        Apps.count(">" + command.keyword)
+        if (command.page) pageRequested(command.page, command.pageProperties ?? {})
+        else {
+            command.run()
+            closeRequested()
+        }
     }
 
     InputField {
@@ -47,8 +92,9 @@ ColumnLayout {
         backgroundColor: "transparent"
         paddingLeft: Settings.spacing
         icon: "search"
-        placeholderText: "Search"
+        placeholderText: "Search apps, or type > for commands"
         radius: Settings.radiusLg
+        focusRing: false
 
         onAccepted: root.launch(root.selected)
 
@@ -89,18 +135,24 @@ ColumnLayout {
         boundsBehavior: Flickable.StopAtBounds
         ScrollBar.vertical: StyledScrollBar {}
 
-        // Diffs each search, so apps that still match keep their delegates
-        model: ScriptModel {
-            values: root.results
-        }
+        // Diffs each search, so items that still match keep their delegates. Each mode has its own model,
+        // so switching rebuilds the list instead of diffing app rows into command rows
+        model: root.commandMode ? commandModel : appModel
 
         delegate: LauncherItem {
             required property var modelData
             required property int index
 
             width: ListView.view.width
-            entry: modelData
+            // Old rows can update once more before the list swaps models, so each row checks what it holds
+            readonly property bool isCommand: modelData.keyword !== undefined
+
             selected: index == root.selected
+            text: modelData.name
+            image: isCommand ? "" : Quickshell.iconPath(modelData.icon, "application-x-executable")
+            icon: isCommand ? modelData.icon : ""
+            detail: !isCommand ? "" : root.armed == modelData.keyword ? "Enter again to confirm" : ">" + modelData.keyword
+            detailColor: root.armed == modelData.keyword ? Colors.primary : Qt.alpha(Colors.text, 0.6)
 
             onHovered: root.selected = index
             onClicked: root.launch(index)
@@ -109,7 +161,7 @@ ColumnLayout {
         Text {
             visible: list.count == 0
             anchors.fill: parent
-            text: "No apps found"
+            text: root.commandMode ? "No commands found" : "No apps found"
             color: Colors.text
             font.pixelSize: Settings.fontSize
             font.family: Settings.fontFamily

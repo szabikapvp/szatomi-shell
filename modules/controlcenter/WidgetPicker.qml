@@ -32,18 +32,14 @@ ColumnLayout {
         color: Colors.backgroundSubtle
     }
 
-    ScrollView {
+    StyledScrollView {
         id: scrollView
 
         visible: root.available.length > 0
         Layout.fillWidth: true
         Layout.fillHeight: true
 
-        clip: true
-        contentWidth: availableWidth
         contentHeight: cards.implicitHeight
-
-        ScrollBar.vertical: StyledScrollBar {}
 
         GridLayout {
             id: cards
@@ -71,6 +67,23 @@ ColumnLayout {
                     opacity: spot ? 1 : 0.4
 
                     Behavior on color { ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
+
+                    // Tab reaches it, Enter or Space adds it
+                    activeFocusOnTab: spot !== null
+                    Keys.onPressed: (event) => {
+                        if (event.key != Qt.Key_Return && event.key != Qt.Key_Enter && event.key != Qt.Key_Space) return
+                        card.add()
+                        event.accepted = true
+                    }
+
+                    FocusRing {}
+
+                    // Adding drops this card from the list, so take what's needed first
+                    function add() {
+                        const page = root
+                        page.grid.add(modelData.type)
+                        page.back()
+                    }
 
                     ColumnLayout {
                         id: content
@@ -125,12 +138,7 @@ ColumnLayout {
                         hoverEnabled: true
                         cursorShape: enabled ? Qt.PointingHandCursor : undefined
 
-                        // Adding drops this card from the list mid handler, so take what's needed first
-                        onClicked: {
-                            const page = root
-                            page.grid.add(card.modelData.type)
-                            page.back()
-                        }
+                        onClicked: card.add()
                     }
                 }
             }

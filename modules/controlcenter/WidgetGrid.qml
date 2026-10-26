@@ -13,7 +13,7 @@ Item {
     required property var store
     property bool editing: false
 
-    signal pageRequested(url page)
+    signal pageRequested(url page, var properties)
 
     readonly property Catalog catalog: Catalog {}
 
@@ -88,12 +88,15 @@ Item {
 
     // One cell per catalog entry, so a widget keeps its tile while it moves around
     Repeater {
+        id: cells
+
         model: root.catalog.entries
 
         Item {
             id: cell
 
             required property var modelData
+            readonly property Item tileItem: tile.item
             readonly property string type: modelData.type
             readonly property var placement: root.shown.find(w => w.type === type) ?? null
 
@@ -143,7 +146,7 @@ Item {
                 target: tile.item
 
                 function onHeld() { root.editing = true }
-                function onPageRequested() { if (cell.modelData.page) root.pageRequested(cell.modelData.page) }
+                function onPageRequested() { if (cell.modelData.page) root.pageRequested(cell.modelData.page, cell.modelData.pageProperties ?? {}) }
             }
 
             // Move
@@ -257,6 +260,60 @@ Item {
             onReleased: handle.released()
             onCanceled: handle.canceled()
         }
+    }
+
+    // KEYBOARD
+
+    // Tab walks the tiles in reading order, arrows go to the closest one that way
+    Keys.onPressed: (event) => {
+        const tiles = focusableTiles()
+        const current = tiles.findIndex(cell => cell.tileItem.activeFocus)
+        if (current < 0 || editing) return
+
+        let next
+        switch (event.key) {
+            case Qt.Key_Tab: next = tiles[(current + 1) % tiles.length]; break
+            case Qt.Key_Backtab: next = tiles[(current - 1 + tiles.length) % tiles.length]; break
+            case Qt.Key_Left: next = nearest(tiles, tiles[current], -1, 0); break
+            case Qt.Key_Right: next = nearest(tiles, tiles[current], 1, 0); break
+            case Qt.Key_Up: next = nearest(tiles, tiles[current], 0, -1); break
+            case Qt.Key_Down: next = nearest(tiles, tiles[current], 0, 1); break
+            default: return
+        }
+        next?.tileItem.forceActiveFocus()
+        event.accepted = true
+    }
+
+    // Shown tiles that take the keyboard, in reading order. They're created in catalog order instead
+    function focusableTiles() {
+        const tiles = []
+        for (let i = 0; i < cells.count; i++) {
+            const cell = cells.itemAt(i)
+            if (cell?.placement && cell.tileItem?.activeFocusOnTab) tiles.push(cell)
+        }
+        return tiles.sort((a, b) => a.rect.y - b.rect.y || a.rect.x - b.rect.x)
+    }
+
+    function focusFirst() {
+        focusableTiles()[0]?.tileItem.forceActiveFocus()
+    }
+
+    // Closest tile whose middle lies in the direction dx, dy. Straying sideways counts double
+    function nearest(tiles, from, dx, dy) {
+        const center = cell => ({ x: cell.rect.x + cell.rect.w / 2, y: cell.rect.y + cell.rect.h / 2 })
+        const origin = center(from)
+        let best = null
+        let bestScore = Infinity
+
+        for (const cell of tiles) {
+            const c = center(cell)
+            const along = (c.x - origin.x) * dx + (c.y - origin.y) * dy
+            const across = Math.abs((c.x - origin.x) * dy) + Math.abs((c.y - origin.y) * dx)
+            if (along <= 0 || along + across * 2 >= bestScore) continue
+            best = cell
+            bestScore = along + across * 2
+        }
+        return best
     }
 
     // LAYOUT RULES

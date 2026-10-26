@@ -11,6 +11,16 @@ Item {
 
     signal toggled()
 
+    // Tab reaches it, Enter or Space flips it
+    activeFocusOnTab: !disabled
+    Keys.onPressed: (event) => {
+        if (event.key != Qt.Key_Return && event.key != Qt.Key_Enter && event.key != Qt.Key_Space) return
+        root.toggled()
+        event.accepted = true
+    }
+
+    FocusRing { targetRadius: root.height / 2 }
+
     implicitHeight: Settings.buttonIconSize + Settings.spacing
     implicitWidth: implicitHeight * 1.75
 

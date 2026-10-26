@@ -53,17 +53,13 @@ ColumnLayout {
         color: Colors.backgroundSubtle
     }
 
-    ScrollView {
+    StyledScrollView {
         id: scrollView
 
         Layout.fillHeight: true
         Layout.fillWidth: true
 
-        clip: true
-        contentWidth: availableWidth
         contentHeight: deviceList.implicitHeight
-
-        ScrollBar.vertical: StyledScrollBar {}
 
         ColumnLayout {
             id: deviceList

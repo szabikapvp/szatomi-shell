@@ -146,12 +146,15 @@ PanelWindow {
                     BatteryIcon { color: batteryButton.tint }
                 }
 
-                // Click mutes, scrolling changes the volume
+                // Click opens the audio settings, right click mutes, scrolling changes the volume
                 BarButton {
                     id: volumeButton
                     tooltip: Audio.isMuted ? "Muted" : "Volume " + Audio.level + "%"
 
-                    onClicked: Audio.toggleMute()
+                    onClicked: (mouse) => {
+                        if (mouse.button == Qt.LeftButton) bar.controlCenter?.togglePage(Qt.resolvedUrl("../controlcenter/SettingsPage.qml"), { category: "Audio" })
+                        else Audio.toggleMute()
+                    }
                     onScrolled: (notches) => Audio.adjust(notches * Settings.sliderScrollStep)
 
                     VolumeIcon { color: volumeButton.tint }

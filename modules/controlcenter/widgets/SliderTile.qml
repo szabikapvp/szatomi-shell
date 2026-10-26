@@ -5,7 +5,7 @@ import "../../../components"
 import qs.config
 
 // Fills from the bottom when taller than wide, from the left otherwise.
-// Click or drag to set the value, scroll to nudge it
+// Click or drag to set the value, scroll to nudge it, right click for the page
 Tile {
     id: root
 
@@ -13,6 +13,10 @@ Tile {
     property string icon
 
     signal moved(real value)
+
+    interactive: true
+    adjustAxis: vertical ? "vertical" : "horizontal"
+    onStepped: (direction) => nudge(direction)
 
     readonly property bool vertical: rows > columns
     readonly property int inset: (Math.min(width, height) - Settings.buttonIconSize) / 2
@@ -79,6 +83,7 @@ Tile {
         property bool moving: false
 
         anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
         cursorShape: Qt.PointingHandCursor
         pressAndHoldInterval: Settings.controlCenterHoldDuration
 
@@ -89,13 +94,17 @@ Tile {
 
         // Waits for a real drag, so a still press can still turn into a hold
         onPositionChanged: (mouse) => {
+            if (!(mouse.buttons & Qt.LeftButton)) return
             if (!moving && Math.hypot(mouse.x - pressPos.x, mouse.y - pressPos.y) < Qt.styleHints.startDragDistance) return
             moving = true
             root.dragging = true
             root.setFrom(mouse)
         }
 
-        onClicked: (mouse) => root.setFrom(mouse)
+        onClicked: (mouse) => {
+            if (mouse.button == Qt.RightButton) root.pageRequested()
+            else root.setFrom(mouse)
+        }
         onReleased: root.dragging = false
         onCanceled: root.dragging = false
         onPressAndHold: if (!moving) root.held()
@@ -109,13 +118,7 @@ Tile {
 
             // Fractions of a notch pass through, so touchpads scroll smoothly. Those follow natural scrolling, so up is always up
             const natural = Settings.naturalScroll && wheel.pixelDelta.y != 0
-            const notches = wheel.angleDelta.y / 120 * (natural ? -1 : 1)
-            const base = root.scrolling ? root.dragValue : root.value
-
-            root.dragValue = Math.max(0, Math.min(100, base + notches * Settings.sliderScrollStep))
-            root.scrolling = true
-            scrollEnd.restart()
-            root.moved(root.dragValue)
+            root.nudge(wheel.angleDelta.y / 120 * (natural ? -1 : 1))
         }
     }
 
@@ -123,6 +126,15 @@ Tile {
         id: scrollEnd
         interval: 500
         onTriggered: root.scrolling = false
+    }
+
+    // Moves by sliderScrollStep per notch or arrow press
+    function nudge(notches) {
+        const base = scrolling ? dragValue : value
+        dragValue = Math.max(0, Math.min(100, base + notches * Settings.sliderScrollStep))
+        scrolling = true
+        scrollEnd.restart()
+        moved(dragValue)
     }
 
     // Whether the fill reaches a point, measured from where it starts

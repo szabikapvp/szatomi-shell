@@ -37,6 +37,16 @@ Item {
     signal clicked()
     signal rightSideClicked()
 
+    // Tab reaches it, Enter or Space presses it
+    activeFocusOnTab: !disabled
+    Keys.onPressed: (event) => {
+        if (event.key != Qt.Key_Return && event.key != Qt.Key_Enter && event.key != Qt.Key_Space) return
+        root.clicked()
+        event.accepted = true
+    }
+
+    FocusRing {}
+
     MouseArea {
         id: mouseArea
 

@@ -113,21 +113,32 @@ Tile {
 
                     Rectangle {
                         anchors.centerIn: parent
-                        width: Math.min(parent.width, parent.height)
+                        // Narrow cells would leave the number touching the edge
+                        width: Math.max(Math.min(parent.width, parent.height), glyphs.tightBoundingRect.width + Settings.px(4))
                         height: width
                         radius: width / 2
                         color: Colors.primary
                         visible: parent.isToday
                     }
 
+                    // Centered on the digits themselves, the line box leaves room for descenders and sits them high
                     Text {
-                        anchors.centerIn: parent
+                        id: dayText
+
+                        x: Math.round((parent.width - glyphs.tightBoundingRect.width) / 2 - glyphs.tightBoundingRect.x)
+                        y: Math.round((parent.height - glyphs.tightBoundingRect.height) / 2 - glyphs.tightBoundingRect.y - baselineOffset)
                         visible: parent.day >= 1 && parent.day <= root.daysInMonth
                         text: parent.day
                         color: Colors.text
                         font.family: Settings.fontFamily
                         font.pixelSize: Settings.fontSize - Settings.px(4)
                         font.bold: parent.isToday
+
+                        TextMetrics {
+                            id: glyphs
+                            font: dayText.font
+                            text: dayText.text
+                        }
                     }
                 }
             }

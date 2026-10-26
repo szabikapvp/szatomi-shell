@@ -32,6 +32,16 @@ Item {
 
     signal rightSideClicked()
 
+    // Tab reaches it, Enter or Space does what a click on the header does
+    activeFocusOnTab: !disabled
+    Keys.onPressed: (event) => {
+        if (event.key != Qt.Key_Return && event.key != Qt.Key_Enter && event.key != Qt.Key_Space) return
+        if (mouseArea.enabled) activate()
+        event.accepted = true
+    }
+
+    FocusRing { targetRadius: root.radius }
+
     // Open the password field when nmcli asks for secrets, flag it if a password was already tried
     Connections {
         target: root.conn
@@ -45,6 +55,12 @@ Item {
             root.expanded = false
             root.wrongPassword = false
         }
+    }
+
+    function activate() {
+        if (expanded) expanded = false
+        else if (conn.active || conn.askingPassword) expanded = true
+        else Network.connectToWifiNetwork(conn)
     }
 
     function submitPassword() {
@@ -101,11 +117,7 @@ Item {
 
             cursorShape: (disabled || connecting) ? Qt.ArrowCursor : Qt.PointingHandCursor
 
-            onClicked: (mouse) => {
-                if (expanded) expanded = false
-                else if (conn.active || conn.askingPassword) expanded = true
-                else Network.connectToWifiNetwork(conn)
-            }
+            onClicked: root.activate()
         }
 
         ColumnLayout {

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Widgets
 import "../../components/widgets"
 
@@ -15,7 +16,7 @@ Rectangle {
     property bool showCategory: false
 
     // Asks the control center to open a page, like the wallpaper selector
-    signal pageRequested(url page)
+    signal pageRequested(url page, var properties)
 
     readonly property var current: Settings.stored(entry.key)
     readonly property bool modified: Settings.isModified(entry.key)
@@ -115,7 +116,7 @@ Rectangle {
             // An inactive Loader still takes up layout spacing
             visible: active
             Layout.fillWidth: true
-            sourceComponent: root.entry.type == "int" ? slider : root.entry.type == "wallpaper" ? wallpaperEditor : textField
+            sourceComponent: ({ int: slider, wallpaper: wallpaperEditor, mixer: mixer, devices: devices })[root.entry.type] ?? textField
         }
     }
 
@@ -210,8 +211,85 @@ Rectangle {
                     text: "Change"
                     Layout.fillWidth: false
 
-                    onClicked: root.pageRequested(Qt.resolvedUrl("WallpaperPage.qml"))
+                    onClicked: root.pageRequested(Qt.resolvedUrl("WallpaperPage.qml"), { fromSettings: true })
                 }
+            }
+        }
+    }
+
+    // Every app that plays or could play sound, each with its own volume
+    Component {
+        id: mixer
+
+        ColumnLayout {
+            spacing: Settings.spacing * 1.5
+
+            // Apps connect and disconnect without Pipewire saying so, so look again every so often
+            Timer {
+                running: true
+                repeat: true
+                triggeredOnStart: true
+                interval: Settings.audioClientRefresh
+                onTriggered: Audio.refreshClients()
+            }
+
+            Repeater {
+                // Matched by app, so a row stays put while its streams come and go
+                model: ScriptModel {
+                    values: Audio.apps
+                    objectProp: "key"
+                }
+
+                AudioAppItem {
+                    required property var modelData
+                    app: modelData
+                }
+            }
+
+            Text {
+                visible: Audio.apps.length === 0
+                text: "No apps are using sound"
+                color: Qt.alpha(Colors.text, 0.6)
+                font.pixelSize: Settings.fontSize - Settings.px(2)
+                font.family: Settings.fontFamily
+                Layout.fillWidth: true
+            }
+        }
+    }
+
+    // Outputs or inputs, each opening its own page
+    Component {
+        id: devices
+
+        ColumnLayout {
+            id: deviceList
+
+            readonly property var nodes: root.entry.input ? Audio.inputs : Audio.outputs
+
+            spacing: 0
+
+            Repeater {
+                model: ScriptModel { values: deviceList.nodes }
+
+                AudioDeviceItem {
+                    required property var modelData
+                    node: modelData
+
+                    onClicked: root.pageRequested(Qt.resolvedUrl("AudioDevicePage.qml"), {
+                        nodeName: node.name,
+                        deviceId: node.properties["device.id"] ?? "",
+                        input: !node.isSink
+                    })
+                }
+            }
+
+            Text {
+                visible: deviceList.nodes.length === 0
+                text: "No devices found"
+                color: Qt.alpha(Colors.text, 0.6)
+                font.pixelSize: Settings.fontSize - Settings.px(2)
+                font.family: Settings.fontFamily
+                Layout.fillWidth: true
             }
         }
     }

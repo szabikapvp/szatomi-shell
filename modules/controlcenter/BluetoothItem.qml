@@ -29,6 +29,22 @@ Item {
 
     implicitHeight: buttonRect.height
 
+    // Tab reaches it, Enter or Space does what a click on the header does
+    activeFocusOnTab: !disabled
+    Keys.onPressed: (event) => {
+        if (event.key != Qt.Key_Return && event.key != Qt.Key_Enter && event.key != Qt.Key_Space) return
+        if (mouseArea.enabled) activate()
+        event.accepted = true
+    }
+
+    FocusRing { targetRadius: root.radius }
+
+    function activate() {
+        if (expanded) expanded = false
+        else if (device.connected) expanded = true
+        else Bluetooth.connectDevice(device)
+    }
+
     Rectangle {
         id: buttonRect
 
@@ -75,11 +91,7 @@ Item {
 
             cursorShape: (disabled || busy) ? Qt.ArrowCursor : Qt.PointingHandCursor
 
-            onClicked: (mouse) => {
-                if (expanded) expanded = false
-                else if (device.connected) expanded = true
-                else Bluetooth.connectDevice(device)
-            }
+            onClicked: root.activate()
         }
 
         ColumnLayout {

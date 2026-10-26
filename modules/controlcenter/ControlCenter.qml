@@ -53,9 +53,14 @@ PanelWindow {
         path: "/tmp/toggle_menu"
         watchChanges: true
 
+        // Comes from a keybind, so the panel takes the keyboard like the launcher does
         onFileChanged: {
-            if (!showing) open()
-            else close()
+            if (showing) {
+                close()
+                return
+            }
+            keyboardGrabbed = true
+            open()
         }
     }
 
@@ -213,6 +218,14 @@ PanelWindow {
                 width: panel.width
                 height: panel.height
 
+                // Arrows no control used move through the controls like Tab and Shift+Tab
+                Keys.onPressed: (event) => {
+                    const forward = event.key == Qt.Key_Down || event.key == Qt.Key_Right
+                    if (!forward && event.key != Qt.Key_Up && event.key != Qt.Key_Left) return
+                    Window.activeFocusItem?.nextItemInFocusChain(forward)?.forceActiveFocus()
+                    event.accepted = true
+                }
+
                 ColumnLayout {
                     id: mainPage
 
@@ -224,8 +237,16 @@ PanelWindow {
 
                     spacing: Settings.spacing * 2
 
-                    // Typing on the grid opens the launcher with the typed key, control characters don't count
+                    // Typing on the grid opens the launcher with the typed key, control characters don't count.
+                    // Tab or an arrow before any tile has the keyboard goes to the first one
                     Keys.onPressed: (event) => {
+                        const navigation = [Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down].includes(event.key)
+                        if (navigation && !grid.editing) {
+                            grid.focusFirst()
+                            event.accepted = true
+                            return
+                        }
+
                         const code = event.text.charCodeAt(0)
                         if (grid.editing || !(code > 32 && code != 127)) return
                         if (event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)) return
@@ -265,7 +286,7 @@ PanelWindow {
                         id: grid
                         store: panelState
 
-                        onPageRequested: (page) => openPage(page)
+                        onPageRequested: (page, properties) => openPage(page, properties)
                     }
                 }
 
@@ -276,6 +297,10 @@ PanelWindow {
                     x: panelPadding
                     y: panelPadding
                     width: parent.width - panelPadding * 2
+
+                    // A page isn't in the window yet while it's being created, so focusing from there doesn't stick.
+                    // It names what should take the keyboard instead, or takes it itself so Tab starts on it
+                    onLoaded: (item.initialFocus ?? item).forceActiveFocus()
                 }
 
                 Connections {
@@ -284,7 +309,7 @@ PanelWindow {
 
                     function onBack() { root.back() }
                     function onCloseRequested() { root.close() }
-                    function onPageRequested(page) { root.openPage(page) }
+                    function onPageRequested(page, properties) { root.openPage(page, properties) }
                 }
             }
         }
@@ -297,7 +322,8 @@ PanelWindow {
     // Steps back from a page, then out of editing, then closes
     function back() {
         // Pages opened from another page go back to it
-        if (pageLoader.item?.parentPage) openPage(pageLoader.item.parentPage, pageLoader.item.parentProperties ?? {})
+        // Urls are objects in JS, so an empty one only reads as false through its text
+        if (pageLoader.item?.parentPage?.toString()) openPage(pageLoader.item.parentPage, pageLoader.item.parentProperties ?? {})
         else if (pageLoader.item && directPage) close()
         else if (pageLoader.item) {
             pageLoader.source = ""
@@ -310,7 +336,8 @@ PanelWindow {
     function close() {
         if (showing && !panel.running) {
 
-            if (root.activeFocusItem) root.activeFocusItem.focus = false
+            // The window itself has no activeFocusItem, only its items do
+            if (panel.Window.activeFocusItem) panel.Window.activeFocusItem.focus = false
             panel.popOut()
             showing = !showing
         }
@@ -326,7 +353,7 @@ PanelWindow {
     }
 
     // Opens straight to a page, or closes when that page is already showing
-    function togglePage(page) {
+    function togglePage(page, properties = {}) {
         if (showing && pageLoader.source.toString() === page.toString()) {
             close()
             return
@@ -336,7 +363,7 @@ PanelWindow {
         if (panel.running) return
         if (!showing) directPage = true
         open()
-        openPage(page)
+        openPage(page, properties)
     }
 
     function toggle() {

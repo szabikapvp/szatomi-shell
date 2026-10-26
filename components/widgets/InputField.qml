@@ -28,6 +28,8 @@ FocusScope {
     property int paddingRight: rightIcon != "" ? spacing : spacing * 2
 
     property bool disabled: false
+    // Off where the field always has the keyboard, like the launcher's
+    property bool focusRing: true
 
     // Same height as Button so they line up in a row
     implicitHeight: Settings.buttonHeight[size]
@@ -96,6 +98,8 @@ FocusScope {
             }
         }
     }
+
+    FocusRing { visible: shown && root.focusRing }
 
     function disable() {
         disabled = true

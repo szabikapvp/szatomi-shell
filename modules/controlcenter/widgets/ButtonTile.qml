@@ -17,6 +17,9 @@ Tile {
 
     signal clicked()
 
+    interactive: true
+    onActivated: if (!disabled) clicked()
+
     readonly property bool compact: columns == 1
     readonly property int inset: (height - Settings.buttonHeight.lg) / 2
 

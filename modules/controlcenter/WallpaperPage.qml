@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Qt.labs.folderlistmodel
 import Quickshell.Widgets
+import "../../components/widgets"
 
 import qs.config
 import qs.services
@@ -14,8 +15,10 @@ ColumnLayout {
     signal back()
 
     readonly property int preferredWidth: Settings.wallpaperPageWidth
-    // Opened from the Theme settings, so back returns there
-    readonly property url parentPage: Qt.resolvedUrl("SettingsPage.qml")
+    // Opened from the Theme settings, back returns there. From a command, it goes where the launcher would
+    property bool fromSettings: false
+    readonly property Item initialFocus: list
+    readonly property url parentPage: fromSettings ? Qt.resolvedUrl("SettingsPage.qml") : ""
     readonly property var parentProperties: ({ category: "Theme" })
 
     spacing: Settings.spacing * 2
@@ -28,15 +31,26 @@ ColumnLayout {
         radius: Settings.radiusMd
         color: "transparent"
 
+        // Left and Right pick, Enter sets. Starts on the current wallpaper
         ListView {
             id: list
 
             anchors.fill: parent
             orientation: ListView.Horizontal
+            onCountChanged: currentIndex = Math.max(0, folder.indexOf("file://" + Wallpaper.current))
+            onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
+
+            Keys.onPressed: (event) => {
+                if (event.key != Qt.Key_Return && event.key != Qt.Key_Enter && event.key != Qt.Key_Space) return
+                if (currentItem) Wallpaper.set(currentItem.filePath)
+                event.accepted = true
+            }
             spacing: Settings.spacing
             boundsBehavior: Flickable.StopAtBounds
 
             model: FolderListModel {
+                id: folder
+
                 folder: "file://" + Wallpaper.folder
                 nameFilters: ["*.jpg", "*.jpeg", "*.png", "*.webp", "*.bmp"]
                 caseSensitive: false
@@ -47,6 +61,7 @@ ColumnLayout {
                 id: thumb
 
                 required property string filePath
+                required property int index
                 readonly property bool current: filePath == Wallpaper.current
 
                 width: height * 16 / 9
@@ -85,6 +100,15 @@ ColumnLayout {
                     Behavior on opacity { NumberAnimation { duration: Settings.popDuration } }
                 }
 
+                // Inside the image, since the next one covers anything outside. Not the accent, which marks the current one
+                FocusRing {
+                    shown: thumb.ListView.isCurrentItem && list.activeFocus
+                    anchors.margins: 0
+                    radius: Settings.radiusMd
+                    border.width: Settings.focusRingWidth * 2
+                    border.color: Colors.foreground
+                }
+
                 // pywal working on this one's palette
                 Loading {
                     anchors.centerIn: parent
@@ -98,7 +122,10 @@ ColumnLayout {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
 
-                    onClicked: Wallpaper.set(thumb.filePath)
+                    onClicked: {
+                        list.currentIndex = thumb.index
+                        Wallpaper.set(thumb.filePath)
+                    }
                 }
             }
         }

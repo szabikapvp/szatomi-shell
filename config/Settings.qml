@@ -135,6 +135,18 @@ QtObject {
     // Apps marked to run in a terminal are started through this, with their command appended
     property list<string> launcherTerminal: ["kitty", "-e"]
 
+    // AUDIO
+
+    // How often the volume mixer looks for apps that connected or quit
+    property int audioClientRefresh: 3000
+
+    // KEYBOARD
+
+    // Outline around whatever the keyboard is on
+    property int focusRingWidth: px(2)
+    // Gap kept between a control reached with the keyboard and the edge of the list it scrolls into view in
+    property int focusScrollMargin: spacing * 2
+
     // SLIDERS
 
     property int sliderScrollStep: value("sliderScrollStep", 5)

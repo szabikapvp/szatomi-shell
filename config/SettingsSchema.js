@@ -12,12 +12,14 @@
 //   path    a file or folder path, ~ allowed
 //   color   a #rrggbb color
 //   wallpaper  the current wallpaper, with a button that opens the selector
+//   mixer      volume of every app that's playing. Stores nothing
+//   devices    output devices, or input devices with input: true, each opening its own page. Stores nothing
 //
 // overriddenBy names a bool setting that, while on, takes over the setting and greys its row out.
 //
 // Ranges are picked so that no combination of values breaks the layout on a 1080p screen.
 
-var categories = ["Appearance", "Theme", "Layout", "Bar", "Control center", "Launcher", "Animations", "Date & time", "Input", "System"]
+var categories = ["Appearance", "Theme", "Layout", "Bar", "Control center", "Launcher", "Audio", "Animations", "Date & time", "Input", "System"]
 
 var maxFormatLength = 32
 
@@ -67,6 +69,11 @@ var entries = [
     // LAUNCHER
     { key: "launcherWidth", category: "Launcher", label: "Width", type: "int", min: 360, max: 800, step: 10, unit: "px" },
     { key: "launcherHeight", category: "Launcher", label: "Height", type: "int", min: 300, max: 700, step: 10, unit: "px" },
+
+    // AUDIO
+    { key: "audioMixer", category: "Audio", label: "Volume mixer", description: "Apps that play or can play sound. Quiet ones start at the volume set here", type: "mixer" },
+    { key: "audioOutputs", category: "Audio", label: "Output devices", description: "Pick one to set its volume, balance, profile and port", type: "devices" },
+    { key: "audioInputs", category: "Audio", label: "Input devices", description: "Pick one to set its volume, profile and port, or test its level", type: "devices", input: true },
 
     // ANIMATIONS
     { key: "popDuration", category: "Animations", label: "Pop duration", description: "Opening and closing panels", type: "int", min: 50, max: 500, step: 10, unit: "ms" },

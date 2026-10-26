@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import qs.config
 
 // Draggable slider for a number from `from` to `to`, snapping to stepSize.
-// moved() only fires on release, so values that change the layout don't reflow it under the pointer
+// moved() only fires on release, so values that change the layout don't reflow it under the pointer. live sends it during drags too
 Item {
     id: root
 
@@ -12,6 +12,7 @@ Item {
     property real to: 100
     property real stepSize: 1
     property real value: 0
+    property bool live: false
 
     signal moved(real value)
 
@@ -25,6 +26,27 @@ Item {
 
     implicitHeight: Settings.buttonIconSize
     Layout.fillWidth: true
+
+    // Left and Right move a step, Page Up and Down ten, Home and End to the ends.
+    // Up and Down are left to move between controls
+    activeFocusOnTab: true
+    Keys.onPressed: (event) => {
+        let target
+        switch (event.key) {
+            case Qt.Key_Right: target = value + stepSize; break
+            case Qt.Key_Left: target = value - stepSize; break
+            case Qt.Key_PageUp: target = value + stepSize * 10; break
+            case Qt.Key_PageDown: target = value - stepSize * 10; break
+            case Qt.Key_Home: target = from; break
+            case Qt.Key_End: target = to; break
+            default: return
+        }
+        target = Math.max(from, Math.min(to, target))
+        if (target != value) root.moved(target)
+        event.accepted = true
+    }
+
+    FocusRing { targetRadius: root.height / 2 }
 
     Rectangle {
         id: track
@@ -64,8 +86,12 @@ Item {
         onPressed: (mouse) => {
             root.dragValue = root.valueAt(mouse.x)
             root.dragging = true
+            if (root.live) root.moved(root.dragValue)
         }
-        onPositionChanged: (mouse) => root.dragValue = root.valueAt(mouse.x)
+        onPositionChanged: (mouse) => {
+            root.dragValue = root.valueAt(mouse.x)
+            if (root.live) root.moved(root.dragValue)
+        }
         onReleased: {
             root.dragging = false
             if (root.dragValue != root.value) root.moved(root.dragValue)

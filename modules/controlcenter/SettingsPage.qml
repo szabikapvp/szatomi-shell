@@ -10,7 +10,7 @@ ColumnLayout {
     id: root
 
     signal back()
-    signal pageRequested(url page)
+    signal pageRequested(url page, var properties)
 
     // Square, and wider than the grid, so the control center resizes to fit it
     readonly property int preferredWidth: Settings.settingsPageSize
@@ -72,17 +72,13 @@ ColumnLayout {
             }
         }
 
-        ScrollView {
+        StyledScrollView {
             id: scrollView
 
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            clip: true
-            contentWidth: availableWidth
             contentHeight: list.implicitHeight
-
-            ScrollBar.vertical: StyledScrollBar {}
 
             ColumnLayout {
                 id: list
@@ -98,7 +94,7 @@ ColumnLayout {
                         entry: modelData
                         showCategory: root.query != ""
 
-                        onPageRequested: (page) => root.pageRequested(page)
+                        onPageRequested: (page, properties) => root.pageRequested(page, properties)
                     }
                 }
 
