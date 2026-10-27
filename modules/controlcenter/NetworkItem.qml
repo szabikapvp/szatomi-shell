@@ -99,10 +99,7 @@ Item {
         radius: root.radius
 
         Behavior on color {
-            ColorAnimation {
-                duration: 100
-                easing.type: Easing.OutCubic
-            }
+            ColorAnim {}
         }
 
         // Only the header row toggles, so clicks around the password field don't collapse it

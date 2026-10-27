@@ -8,9 +8,10 @@ Item {
     id: root
 
     default property alias content: inner.data
-    property real progress: 0
+    // How open it is, 0 to 1. A spring, so opening and closing can reverse each other mid-flight. Reversing can
+    // swing it slightly past either end, which drawing ignores
+    readonly property real progress: Math.max(0, Math.min(1, pop.value))
     property real radius: 0
-    readonly property bool running: anim.running
 
     // Corner to grow from, defaults to the one nearest the parent's edges
     property bool fromRight: parent ? x + width / 2 > parent.width / 2 : true
@@ -18,18 +19,29 @@ Item {
     // Grows from the middle of the edge instead, overriding fromRight
     property bool fromCenter: false
 
-    // Eases towards the real size, the mask follows it
-    property real shownWidth: width
-    property real shownHeight: height
+    // Springs towards the real size, the mask follows it. Hidden, it just takes the new size
+    readonly property real shownWidth: widthSpring.value
+    readonly property real shownHeight: heightSpring.value
 
-    Behavior on shownWidth {
-        enabled: root.progress > 0
-        NumberAnimation { duration: Settings.resizeDuration; easing.type: Easing.OutCubic }
+    // Reduce motion fades the content in place instead of growing the mask
+    readonly property bool fading: Settings.reduceMotion
+
+    Spring {
+        id: pop
+        epsilon: 0.001
+        instant: false
     }
 
-    Behavior on shownHeight {
-        enabled: root.progress > 0
-        NumberAnimation { duration: Settings.resizeDuration; easing.type: Easing.OutCubic }
+    Spring {
+        id: widthSpring
+        to: root.width
+        instant: root.progress == 0 || Settings.reduceMotion
+    }
+
+    Spring {
+        id: heightSpring
+        to: root.height
+        instant: root.progress == 0 || Settings.reduceMotion
     }
 
     // While shrinking the content holds its larger size until the mask is done, so it collapses with the mask
@@ -76,9 +88,10 @@ Item {
         width: inner.width
         height: inner.height
         visible: root.masking
+        opacity: root.fading ? root.progress : 1
 
-        readonly property real maskWidth: root.shownWidth * root.progress
-        readonly property real maskHeight: root.shownHeight * root.progress
+        readonly property real maskWidth: root.shownWidth * (root.fading ? 1 : root.progress)
+        readonly property real maskHeight: root.shownHeight * (root.fading ? 1 : root.progress)
 
         property var source: contentSource
         property size itemSize: Qt.size(width, height)
@@ -97,28 +110,16 @@ Item {
         fragmentShader: Qt.resolvedUrl("shaders/popmask.frag.qsb")
     }
 
-    NumberAnimation {
-        id: anim
-        target: root
-        property: "progress"
-        duration: Settings.popDuration
-    }
-
     // The corner it grows from. Growing from an edge's middle has none, so every corner stays round
     function isOrigin(right, bottom) {
         return !fromCenter && fromBottom == bottom && fromRight == right
     }
 
     function popIn() {
-        anim.to = 1
-        anim.easing.type = Easing.OutCubic
-        anim.restart()
+        pop.to = 1
     }
 
-    // Mirrors popIn, so the easing is reversed too
     function popOut() {
-        anim.to = 0
-        anim.easing.type = Easing.InCubic
-        anim.restart()
+        pop.to = 0
     }
 }

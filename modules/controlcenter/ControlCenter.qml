@@ -24,7 +24,8 @@ PanelWindow {
     // The grid, or a page opened from it
     property Item visiblePage: pageLoader.item ?? mainPage
     property bool showing: false
-    visible: panel.progress > 0
+    // Showing too, since reopening right as it closes can swing the spring just past closed for a frame
+    visible: showing || panel.progress > 0
 
     readonly property url launcherPage: Qt.resolvedUrl("LauncherPage.qml")
     readonly property bool launcherOpen: pageLoader.source.toString() === launcherPage.toString()
@@ -37,9 +38,13 @@ PanelWindow {
     // Pages and editing end once the panel is fully hidden, so nothing changes mid animation
     onVisibleChanged: {
         if (visible) return
+        resetPages()
+        keyboardGrabbed = false
+    }
+
+    function resetPages() {
         pageLoader.source = ""
         grid.editing = false
-        keyboardGrabbed = false
         directPage = false
     }
 
@@ -108,31 +113,44 @@ PanelWindow {
         onActivated: back()
     }
 
-    // One shared progress drives both axes, so the snap always moves in a straight line
-    property real snapProgress: 0
-    property point snapFrom
+    // After a drag the panel rides these into its corner. One per axis, so each keeps its own speed from the throw
+    property bool snapping: false
 
-    onSnapProgressChanged: {
-        if (!snap.running) return
-        panel.x = snapFrom.x + (cornerX - snapFrom.x) * snapProgress
-        panel.y = snapFrom.y + (cornerY - snapFrom.y) * snapProgress
+    Spring {
+        id: snapX
+        to: root.cornerX
+        // Outside a snap it just tracks the corner, without running frames for nobody
+        instant: !root.snapping || Settings.reduceMotion
+        response: Settings.flickResponse
+        dampingRatio: Settings.flickDamping
+        onSettled: root.endSnap()
     }
 
-    NumberAnimation {
-        id: snap
+    Spring {
+        id: snapY
+        to: root.cornerY
+        // Outside a snap it just tracks the corner, without running frames for nobody
+        instant: !root.snapping || Settings.reduceMotion
+        response: Settings.flickResponse
+        dampingRatio: Settings.flickDamping
+        onSettled: root.endSnap()
+    }
 
-        target: root
-        property: "snapProgress"
-        from: 0
-        to: 1
-        duration: Settings.snapDuration
-        easing.type: Easing.OutCubic
+    // Dragging broke the corner bindings, restore them so page height changes keep the corner
+    function endSnap() {
+        if (!snapping) return
+        if (!snapX.running) panel.x = Qt.binding(() => cornerX)
+        if (!snapY.running) panel.y = Qt.binding(() => cornerY)
+        snapping = snapX.running || snapY.running
+    }
 
-        // Dragging broke the bindings, restore them so page height changes keep the corner
-        onFinished: {
-            panel.x = Qt.binding(() => cornerX)
-            panel.y = Qt.binding(() => cornerY)
-        }
+    // Leaves the panel where it is, mid snap, so it can be caught
+    function holdSnap() {
+        snapping = false
+        snapX.stop()
+        snapY.stop()
+        panel.x = panel.x
+        panel.y = panel.y
     }
 
     PopMask {
@@ -146,7 +164,8 @@ PanelWindow {
         fromRight: panelState.right
         fromBottom: panelState.bottom
         fromCenter: panelState.center
-        radius: Settings.radiusLg
+        // Matches the panel's own corners, or they'd change shape when the mask lets go
+        radius: Settings.radiusLg + panelPadding
 
         Rectangle {
             id: osdRect
@@ -159,6 +178,9 @@ PanelWindow {
 
             // Only reachable on empty parts, the content on top takes its own clicks
             MouseArea {
+                // Where the panel was over the last moments of the drag, for the speed it's thrown at
+                property var trail: []
+
                 anchors.fill: parent
                 drag.target: panel
                 drag.minimumX: 0
@@ -173,35 +195,66 @@ PanelWindow {
 
                 // Dragging moves the panel from C++, which leaves the corner bindings alive.
                 // Break them here, or changing the corner on release jumps the panel there
-                drag.onActiveChanged: {
+                drag.onActiveChanged: if (drag.active) holdSnap()
+
+                // Catches a snapping panel right where it is, before any drag starts
+                onPressed: {
+                    trail = []
+                    if (snapping) holdSnap()
+                }
+
+                onPositionChanged: {
                     if (!drag.active) return
-                    panel.x = panel.x
-                    panel.y = panel.y
+                    const now = Date.now()
+                    trail = trail.filter(point => now - point.t < 100).concat([{ x: panel.x, y: panel.y, t: now }])
                 }
 
                 // Switching workspaces can take the pointer away mid drag, which cancels instead of releasing
                 onReleased: snapToNearest()
                 onCanceled: snapToNearest()
 
-                // Snaps to whichever of left, center and right rests closest
+                // Carries on at the drag's speed into whichever of left, center and right the throw would land
+                // closest to, the way a flicked list coasts
                 function snapToNearest() {
-                    snapFrom = Qt.point(panel.x, panel.y)
+                    const now = Date.now()
+                    const first = trail.find(point => now - point.t < 100) ?? { x: panel.x, y: panel.y, t: now - 1 }
+                    const elapsed = Math.max(now - first.t, 1) / 1000
+
+                    // Starts from where the panel is, before the corner moves
+                    snapping = true
+                    snapX.value = panel.x
+                    snapY.value = panel.y
+                    snapX.velocity = (panel.x - first.x) / elapsed
+                    snapY.velocity = (panel.y - first.y) / elapsed
+                    panel.x = Qt.binding(() => snapX.value)
+                    panel.y = Qt.binding(() => snapY.value)
+
+                    const landX = panel.x + project(snapX.velocity)
+                    const landY = panel.y + project(snapY.velocity)
                     const restX = [marginSize, (panel.parent.width - panel.width) / 2, panel.parent.width - panel.width - marginSize]
-                    const nearest = restX.reduce((best, x, i) => Math.abs(panel.x - x) < Math.abs(panel.x - restX[best]) ? i : best, 0)
+                    const nearest = restX.reduce((best, x, i) => Math.abs(landX - x) < Math.abs(landX - restX[best]) ? i : best, 0)
                     panelState.center = nearest == 1
                     panelState.right = nearest == 2
-                    panelState.bottom = panel.y + panel.height / 2 > panel.parent.height / 2
-                    snap.restart()
+                    panelState.bottom = landY + panel.height / 2 > panel.parent.height / 2
+
+                    // The corner may not have changed, which wouldn't start them on its own
+                    snapX.animate()
+                    snapY.animate()
+                }
+
+                // Distance a throw coasts before stopping, Apple's scroll deceleration
+                function project(velocity) {
+                    const rate = Settings.flickDeceleration
+                    return velocity / 1000 * rate / (1 - rate)
                 }
             }
 
             // The corner facing the screen corner stays small, the one the panel grows from
             radius: Settings.radiusLg
-            property int calculatedRadius: Settings.radiusLg + panelPadding
-            topLeftRadius: panel.isOrigin(false, false) ? Settings.radiusSm : calculatedRadius
-            topRightRadius: panel.isOrigin(true, false) ? Settings.radiusSm : calculatedRadius
-            bottomLeftRadius: panel.isOrigin(false, true) ? Settings.radiusSm : calculatedRadius
-            bottomRightRadius: panel.isOrigin(true, true) ? Settings.radiusSm : calculatedRadius
+            topLeftRadius: panel.isOrigin(false, false) ? Settings.radiusSm : panel.radius
+            topRightRadius: panel.isOrigin(true, false) ? Settings.radiusSm : panel.radius
+            bottomLeftRadius: panel.isOrigin(false, true) ? Settings.radiusSm : panel.radius
+            bottomRightRadius: panel.isOrigin(true, true) ? Settings.radiusSm : panel.radius
 
             color: Colors.background
             border.width: 1
@@ -329,8 +382,9 @@ PanelWindow {
         else close()
     }
 
+    // Both reverse a panel that's still moving the other way, so nothing waits on an animation
     function close() {
-        if (showing && !panel.running) {
+        if (showing) {
 
             // The window itself has no activeFocusItem, only its items do
             if (panel.Window.activeFocusItem) panel.Window.activeFocusItem.focus = false
@@ -340,9 +394,11 @@ PanelWindow {
     }
 
     function open() {
-        if (!showing && !panel.running) {
+        if (!showing) {
+            // Reopened mid close it still holds the last page, but opening always starts on the grid.
             // Pages focus themselves, the grid listens for typing
-            if (!pageLoader.item) mainPage.forceActiveFocus()
+            resetPages()
+            mainPage.forceActiveFocus()
             panel.popIn()
             showing = !showing
         }
@@ -355,10 +411,10 @@ PanelWindow {
             return
         }
 
-        // Mid animation the panel ignores open() and close(), so leave the page alone too
-        if (panel.running) return
-        if (!showing) directPage = true
+        // open() starts on the grid, so the page is only marked direct after it
+        const opening = !showing
         open()
+        if (opening) directPage = true
         openPage(page, properties)
     }
 

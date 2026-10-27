@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 
 import qs.config
+import qs.utils
 
 Item {
 
@@ -23,9 +24,7 @@ Item {
         radius: Settings.px(3)
         color: Colors.primary
 
-        Behavior on width {
-            NumberAnimation { duration: 50 }
-        }
+        Behavior on width { Anim { fast: true } }
     }
 
 }

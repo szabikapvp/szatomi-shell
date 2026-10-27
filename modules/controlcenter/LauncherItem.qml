@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import "../../components"
 
 import qs.config
+import qs.utils
 
 // One app or command in the launcher list. Hovering selects it, like moving there with the keys
 Rectangle {
@@ -26,7 +27,7 @@ Rectangle {
     color: Qt.alpha(Colors.foreground, mouseArea.pressed ? 0.2 : selected ? 0.1 : 0)
 
     Behavior on color {
-        ColorAnimation { duration: 100; easing.type: Easing.OutCubic }
+        ColorAnim {}
     }
 
     MouseArea {

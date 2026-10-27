@@ -18,7 +18,7 @@ Singleton {
     Timer {
         id: delay
         // Double, so the hidden window's last frame is on screen before the command runs
-        interval: Settings.popDuration * 2
+        interval: Settings.motionDuration * 2
         onTriggered: Quickshell.execDetached(Settings.powerCommands[pending])
     }
 }

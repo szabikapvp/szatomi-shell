@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import "../../../components"
 
 import qs.config
+import qs.utils
 
 // One row tall. A single cell shows only the icon, wider tiles add a title and a subtitle.
 // The icon runs clicked(), the rest of the tile and right clicks open the page
@@ -31,7 +32,7 @@ Tile {
         radius: parent.radius
         color: Qt.alpha(Colors.foreground, bodyArea.pressed ? 0.1 : bodyArea.containsMouse ? 0.05 : 0)
 
-        Behavior on color { enabled: root.settled; ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
+        Behavior on color { enabled: root.settled; ColorAnim {} }
     }
 
     MouseArea {
@@ -60,14 +61,14 @@ Tile {
         color: root.active ? Colors.primary : (root.compact ? "transparent" : Qt.alpha(Colors.foreground, 0.1))
         opacity: root.disabled ? 0.4 : 1
 
-        Behavior on color { enabled: root.settled; ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
+        Behavior on color { enabled: root.settled; ColorAnim {} }
 
         Rectangle {
             anchors.fill: parent
             radius: parent.radius
             color: Qt.alpha(Colors.foreground, iconArea.pressed ? 0.2 : iconArea.containsMouse ? 0.1 : 0)
 
-            Behavior on color { enabled: root.settled; ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
+            Behavior on color { enabled: root.settled; ColorAnim {} }
         }
 
         Icon {

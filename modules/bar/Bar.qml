@@ -7,6 +7,7 @@ import "../../components/widgets"
 import "../controlcenter"
 
 import qs.config
+import qs.utils
 import qs.services
 
 PanelWindow {
@@ -86,15 +87,10 @@ PanelWindow {
                         radius: Settings.px(5)
                         color: isActive ? Colors.primary : (ws ? Colors.text : Qt.alpha(Colors.text, 0.2))
 
-                        Behavior on Layout.preferredWidth {
-                            NumberAnimation { duration: 100 }
-                        }
+                        Behavior on Layout.preferredWidth { Anim {} }
 
                         Behavior on color {
-                            ColorAnimation {
-                                duration: 200
-                                easing.type: Easing.OutCubic
-                            }
+                            ColorAnim {}
                         }
 
                         MouseArea {

@@ -4,6 +4,7 @@ import QtQuick.Controls
 import "../../components/widgets"
 
 import qs.config
+import qs.utils
 
 // Every widget not on the grid yet, each shown as its real tile, shrunk, at the size it would be added at
 ColumnLayout {
@@ -66,7 +67,7 @@ ColumnLayout {
                     color: Qt.alpha(Colors.foreground, area.pressed ? 0.1 : area.containsMouse ? 0.05 : 0)
                     opacity: spot ? 1 : 0.4
 
-                    Behavior on color { ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
+                    Behavior on color { ColorAnim {} }
 
                     // Tab reaches it, Enter or Space adds it
                     activeFocusOnTab: spot !== null

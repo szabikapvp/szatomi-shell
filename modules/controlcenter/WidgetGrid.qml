@@ -3,6 +3,7 @@ import "../../components"
 import "widgets"
 
 import qs.config
+import qs.utils
 
 // Places widgets on a fixed column grid, and lets the user move, resize, add and remove them while editing.
 // A layout is a list of { type, x, y, w, h }, measured in cells
@@ -55,7 +56,7 @@ Item {
             opacity: root.editing ? 1 : 0
             visible: opacity > 0
 
-            Behavior on opacity { NumberAnimation { duration: Settings.popDuration } }
+            Behavior on opacity { Fade {} }
         }
     }
 
@@ -71,8 +72,8 @@ Item {
         radius: Settings.radiusLg
         color: Qt.alpha(Colors.foreground, 0.1)
 
-        Behavior on x { NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
-        Behavior on y { NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
+        Behavior on x { Anim { fast: true } }
+        Behavior on y { Anim { fast: true } }
     }
 
     Text {
@@ -119,12 +120,12 @@ Item {
             visible: opacity > 0
 
             // Off while fading in, so a new widget appears in place instead of flying there
-            Behavior on x { enabled: cell.opacity == 1 && !cell.dragging; NumberAnimation { duration: Settings.resizeDuration; easing.type: Easing.OutCubic } }
-            Behavior on y { enabled: cell.opacity == 1 && !cell.dragging; NumberAnimation { duration: Settings.resizeDuration; easing.type: Easing.OutCubic } }
-            Behavior on width { enabled: cell.opacity == 1; NumberAnimation { duration: Settings.resizeDuration; easing.type: Easing.OutCubic } }
-            Behavior on height { enabled: cell.opacity == 1; NumberAnimation { duration: Settings.resizeDuration; easing.type: Easing.OutCubic } }
-            Behavior on scale { NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
-            Behavior on opacity { NumberAnimation { duration: Settings.popDuration } }
+            Behavior on x { enabled: cell.opacity == 1 && !cell.dragging; Anim {} }
+            Behavior on y { enabled: cell.opacity == 1 && !cell.dragging; Anim {} }
+            Behavior on width { enabled: cell.opacity == 1; Anim {} }
+            Behavior on height { enabled: cell.opacity == 1; Anim {} }
+            Behavior on scale { Anim { fast: true } }
+            Behavior on opacity { Fade {} }
 
             Loader {
                 id: tile
@@ -239,7 +240,7 @@ Item {
         opacity: shown ? 1 : 0
         visible: opacity > 0
 
-        Behavior on opacity { NumberAnimation { duration: Settings.popDuration } }
+        Behavior on opacity { Fade {} }
 
         Icon {
             anchors.centerIn: parent

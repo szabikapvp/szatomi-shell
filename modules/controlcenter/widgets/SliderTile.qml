@@ -3,6 +3,7 @@ import Qt5Compat.GraphicalEffects
 import "../../../components"
 
 import qs.config
+import qs.utils
 
 // Fills from the bottom when taller than wide, from the left otherwise.
 // Click or drag to set the value, scroll to nudge it, right click for the page
@@ -49,8 +50,8 @@ Tile {
             height: root.vertical ? root.fillLength : parent.height
             color: Colors.foreground
 
-            Behavior on width { enabled: root.settled && !root.dragging; NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
-            Behavior on height { enabled: root.settled && !root.dragging; NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
+            Behavior on width { enabled: root.settled && !root.dragging; Anim { fast: true } }
+            Behavior on height { enabled: root.settled && !root.dragging; Anim { fast: true } }
         }
     }
 

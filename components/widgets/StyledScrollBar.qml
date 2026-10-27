@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 
 import qs.config
+import qs.utils
 
 // Thin overlay scrollbar: sits on top of the content and fades out when idle
 ScrollBar {
@@ -19,12 +20,7 @@ ScrollBar {
 
     opacity: active ? 1 : 0
 
-    Behavior on opacity {
-        NumberAnimation {
-            duration: Settings.popDuration
-            easing.type: Easing.OutCubic
-        }
-    }
+    Behavior on opacity { Fade {} }
 
     background: null
 
@@ -44,18 +40,10 @@ ScrollBar {
                 return Qt.alpha(Colors.foreground, 0.5)
             }
 
-            Behavior on width {
-                NumberAnimation {
-                    duration: Settings.popDuration
-                    easing.type: Easing.OutCubic
-                }
-            }
+            Behavior on width { Anim { fast: true } }
 
             Behavior on color {
-                ColorAnimation {
-                    duration: 100
-                    easing.type: Easing.OutCubic
-                }
+                ColorAnim {}
             }
         }
     }

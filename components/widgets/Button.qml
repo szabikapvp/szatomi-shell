@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 
 import qs.config
+import qs.utils
 import "../../components"
 
 Item {
@@ -33,6 +34,10 @@ Item {
     implicitWidth: content.implicitWidth + paddingLeft + paddingRight
 
     Layout.fillWidth: true
+
+    // Sinks the moment it's pressed, before the click lands
+    scale: mouseArea.pressed || rightMouseArea.pressed ? Settings.pressScale : 1
+    Behavior on scale { Anim { fast: true } }
 
     signal clicked()
     signal rightSideClicked()
@@ -89,10 +94,7 @@ Item {
         radius: root.radius
 
         Behavior on color {
-            ColorAnimation {
-                duration: 100
-                easing.type: Easing.OutCubic
-            }
+            ColorAnim {}
         }
     
         RowLayout {

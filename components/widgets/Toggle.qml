@@ -1,6 +1,7 @@
 import QtQuick
 
 import qs.config
+import qs.utils
 
 // On/off switch
 Item {
@@ -31,7 +32,7 @@ Item {
         radius: height / 2
         color: root.checked ? Colors.primary : Qt.alpha(Colors.foreground, 0.15)
 
-        Behavior on color { ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
+        Behavior on color { ColorAnim {} }
 
         Rectangle {
             readonly property int inset: Settings.spacing / 2
@@ -43,7 +44,7 @@ Item {
             radius: width / 2
             color: Colors.text
 
-            Behavior on x { NumberAnimation { duration: Settings.popDuration; easing.type: Easing.OutCubic } }
+            Behavior on x { Anim {} }
         }
     }
 

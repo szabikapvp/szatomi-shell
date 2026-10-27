@@ -82,9 +82,29 @@ QtObject {
 
     // ANIMATIONS
 
-    property int popDuration: value("popDuration", 200)
-    property int snapDuration: value("snapDuration", 400)
-    property int resizeDuration: value("resizeDuration", 200)
+    // Motion follows Apple's springs: response is roughly how long a move takes in seconds, a damping ratio of 1
+    // settles without overshoot and lower ones bounce. Animation speed scales every one of them
+    property int animationSpeed: value("animationSpeed", 100)
+    // Fades instead of sliding and growing, and snaps moved things into place
+    property bool reduceMotion: value("reduceMotion", false)
+    readonly property real motionScale: 100 / animationSpeed
+
+    // Opening panels, moving and resizing things
+    readonly property real springResponse: 0.3 * motionScale
+    // The control center settling into a corner after a throw. It carries momentum, so it may bounce a little
+    readonly property real flickResponse: 0.4 * motionScale
+    property real flickDamping: 0.8
+    // How far a throw carries, the rate scrolling slows down at. Lower stops sooner
+    property real flickDeceleration: 0.998
+
+    // Behaviors can't run a real spring, so they trace the default one's curve over the time it takes to settle,
+    // which is 1.273 times its response
+    readonly property var springCurve: [0.3, 0.43, 0.105, 1, 1, 1]
+    readonly property int motionDuration: Math.round(springResponse * 1273)
+    // Hover, press and color feedback
+    readonly property int motionFastDuration: Math.round(150 * motionScale)
+    // Buttons sink a little while held
+    property real pressScale: 0.97
 
     property string dateFormat: value("dateFormat", "MM/dd ddd")
     property string timeFormat: value("timeFormat", "h:mm")

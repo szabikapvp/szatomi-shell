@@ -6,6 +6,7 @@ import "../../components/widgets"
 import "../../components"
 
 import qs.config
+import qs.utils
 
 PanelWindow {
     id: root
@@ -18,6 +19,7 @@ PanelWindow {
     // Set while something else already shows the value
     property bool suppressed: false
     property Component icon: VolumeIcon {}
+    property bool shown: false
 
     anchors.bottom: true
     margins.bottom: 0
@@ -36,22 +38,12 @@ PanelWindow {
         if (!suppressed) ping()
     }
 
-    NumberAnimation {
-        id: slideIn
-        target: osdRect
-        property: "y"
-        to: 0
-        duration: 300
-        easing.type: Easing.OutCubic
-    }
-
-    NumberAnimation {
-        id: slideOut
-        target: osdRect
-        property: "y"
-        to: root.height
-        duration: 250
-        easing.type: Easing.InCubic 
+    // Rises out of the screen edge and sinks back the same way, picking up from wherever it is when pinged again.
+    // Reduce motion keeps it in place and only fades it
+    Spring {
+        id: slide
+        to: root.shown || Settings.reduceMotion ? 1 : 0
+        epsilon: 0.001
     }
 
     Rectangle {
@@ -59,9 +51,12 @@ PanelWindow {
 
         width: parent.width
         height: popupHeight
-        y: root.height
+        y: (1 - slide.value) * root.height
+        opacity: root.shown ? 1 : 0
         color: Colors.background
         radius: Settings.radiusMd
+
+        Behavior on opacity { Fade {} }
 
         RowLayout {
 
@@ -100,13 +95,11 @@ PanelWindow {
         id: osdTimer
         interval: 1500
         repeat: false
-        onTriggered: {
-            slideOut.restart()
-        }
+        onTriggered: root.shown = false
     }
 
     function ping() {
-        slideIn.restart()
+        shown = true
         osdTimer.restart()
     }
 }

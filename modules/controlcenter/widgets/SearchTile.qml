@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import "../../../components"
 
 import qs.config
+import qs.utils
 
 // Looks like a search field, clicking it opens the launcher. Typing anywhere in the
 // control center opens it too, so the field itself never takes the keys
@@ -23,7 +24,7 @@ Tile {
         radius: parent.radius
         color: Qt.alpha(Colors.foreground, area.pressed ? 0.1 : area.containsMouse ? 0.05 : 0)
 
-        Behavior on color { enabled: root.settled; ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
+        Behavior on color { enabled: root.settled; ColorAnim {} }
     }
 
     MouseArea {

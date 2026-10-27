@@ -73,10 +73,7 @@ Item {
         radius: root.radius
 
         Behavior on color {
-            ColorAnimation {
-                duration: 100
-                easing.type: Easing.OutCubic
-            }
+            ColorAnim {}
         }
 
         // Connected devices expand to their actions, everything else connects on click

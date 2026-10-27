@@ -3,3 +3,7 @@ module utils
 Loading 1.0 Loading.qml
 BackGesture 1.0 BackGesture.qml
 PopMask 1.0 PopMask.qml
+Spring 1.0 Spring.qml
+Anim 1.0 Anim.qml
+Fade 1.0 Fade.qml
+ColorAnim 1.0 ColorAnim.qml

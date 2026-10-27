@@ -80,9 +80,8 @@ var entries = [
     { key: "audioInputs", category: "Audio", label: "Input devices", description: "Pick one to set its volume, profile and port, or test its level", type: "devices", input: true },
 
     // ANIMATIONS
-    { key: "popDuration", category: "Animations", label: "Pop duration", description: "Opening and closing panels", type: "int", min: 50, max: 500, step: 10, unit: "ms" },
-    { key: "resizeDuration", category: "Animations", label: "Resize duration", description: "Panels changing size, widgets moving", type: "int", min: 50, max: 500, step: 10, unit: "ms" },
-    { key: "snapDuration", category: "Animations", label: "Snap duration", description: "The control center snapping into place after a drag", type: "int", min: 100, max: 800, step: 10, unit: "ms" },
+    { key: "animationSpeed", category: "Animations", label: "Speed", description: "How quickly everything moves, higher is faster", type: "int", min: 50, max: 200, step: 10, unit: "%" },
+    { key: "reduceMotion", category: "Animations", label: "Reduce motion", description: "Fade instead of sliding and growing", type: "bool" },
 
     // DATE & TIME
     { key: "timeFormat", category: "Date & time", label: "Time format", description: "For example h:mm or HH:mm", type: "format" },

@@ -84,7 +84,7 @@ ColumnLayout {
                         anchors.fill: parent
                         color: Qt.alpha(Colors.background, area.pressed ? 0.4 : area.containsMouse ? 0.2 : 0)
 
-                        Behavior on color { ColorAnimation { duration: 100; easing.type: Easing.OutCubic } }
+                        Behavior on color { ColorAnim {} }
                     }
                 }
 
@@ -97,7 +97,7 @@ ColumnLayout {
                     border.color: Colors.primary
                     opacity: thumb.current ? 1 : 0
 
-                    Behavior on opacity { NumberAnimation { duration: Settings.popDuration } }
+                    Behavior on opacity { Fade {} }
                 }
 
                 // Inside the image, since the next one covers anything outside. Not the accent, which marks the current one
