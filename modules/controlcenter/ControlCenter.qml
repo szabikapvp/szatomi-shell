@@ -435,6 +435,7 @@ PanelWindow {
             case "launcher": togglePage(launcherPage); break
             case "settings": togglePage(Qt.resolvedUrl("SettingsPage.qml")); break
             case "wallpaper": togglePage(Qt.resolvedUrl("WallpaperPage.qml")); break
+            case "displays": togglePage(Qt.resolvedUrl("SettingsPage.qml"), { category: "Displays" }); break
         }
     }
 

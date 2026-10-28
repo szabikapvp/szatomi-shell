@@ -14,3 +14,4 @@ singleton Power Power.qml
 singleton Apps Apps.qml
 singleton Wallpaper Wallpaper.qml
 singleton Shortcuts Shortcuts.qml
+singleton Displays Displays.qml

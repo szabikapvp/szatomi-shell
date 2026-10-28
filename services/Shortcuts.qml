@@ -18,7 +18,8 @@ Singleton {
         controlcenter: "shortcutControlCenter",
         launcher: "shortcutLauncher",
         settings: "shortcutSettings",
-        wallpaper: "shortcutWallpaper"
+        wallpaper: "shortcutWallpaper",
+        displays: "shortcutDisplays"
     })
 
     signal triggered(string action)
@@ -102,9 +103,11 @@ Singleton {
         bindsReader.running = true
     }
 
-    // One hyprctl call, so the unbinds land before the binds
+    // One hyprctl call, so the unbinds land before the binds. Wanted combos are unbound too, since a restarted shell
+    // doesn't know what the last one bound, and binding again would fire the shortcut twice
     function apply() {
-        const lua = bound.map(combo => `hl.unbind(${JSON.stringify(combo)})`)
+        const combos = [...new Set(bound.concat(wanted.map(shortcut => shortcut.combo)))]
+        const lua = combos.map(combo => `hl.unbind(${JSON.stringify(combo)})`)
             .concat(wanted.map(shortcut => `hl.bind(${JSON.stringify(shortcut.combo)}, hl.dsp.global("quickshell:${shortcut.action}"), { description = "quickshell:${shortcut.action}" })`))
             // Nothing but Escape is bound while recording, so the keys reach the shell instead of running binds
             .concat([`hl.define_submap("quickshell-record", function() hl.unbind("ESCAPE") hl.bind("ESCAPE", hl.dsp.submap("reset")) end)`])

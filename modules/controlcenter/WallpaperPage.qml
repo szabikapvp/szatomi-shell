@@ -23,6 +23,29 @@ ColumnLayout {
 
     spacing: Settings.spacing * 2
 
+    // Which display the picked image goes on, once there are several
+    RowLayout {
+        visible: Displays.arrangedCount > 1
+        Layout.fillWidth: true
+        spacing: Settings.spacing
+
+        Text {
+            text: "Set for"
+            color: Colors.text
+            font.pixelSize: Settings.fontSize
+            font.family: Settings.fontFamily
+            font.bold: true
+        }
+
+        Dropdown {
+            Layout.fillWidth: false
+            Layout.preferredWidth: Settings.px(280)
+            options: [{ text: "All displays", value: "" }].concat(Displays.arranged.map(config => ({ text: config.label, value: config.key })))
+            current: Wallpaper.target
+            onPicked: (value) => Wallpaper.target = value
+        }
+    }
+
     // Rounded like the thumbnails, so one cut off at the edge still gets round corners
     ClippingRectangle {
         Layout.fillWidth: true
@@ -37,7 +60,7 @@ ColumnLayout {
 
             anchors.fill: parent
             orientation: ListView.Horizontal
-            onCountChanged: currentIndex = Math.max(0, folder.indexOf("file://" + Wallpaper.current))
+            onCountChanged: currentIndex = Math.max(0, folder.indexOf("file://" + Wallpaper.selected))
             onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
 
             Keys.onPressed: (event) => {
@@ -62,7 +85,7 @@ ColumnLayout {
 
                 required property string filePath
                 required property int index
-                readonly property bool current: filePath == Wallpaper.current
+                readonly property bool current: filePath == Wallpaper.selected
 
                 width: height * 16 / 9
                 height: ListView.view.height

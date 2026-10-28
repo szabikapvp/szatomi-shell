@@ -4,6 +4,7 @@ import QtQuick.Controls
 import "../../components/widgets"
 
 import qs.config
+import qs.services
 
 // Every setting from the schema, by category or by search
 ColumnLayout {
@@ -19,7 +20,7 @@ ColumnLayout {
 
     property string category: Settings.schema.categories[0]
     readonly property string query: search.text.trim().toLowerCase()
-    readonly property var results: Settings.schema.entries.filter(entry => query == "" ? entry.category == category : matches(entry))
+    readonly property var results: Settings.schema.entries.filter(entry => available(entry) && (query == "" ? entry.category == category : matches(entry)))
 
     onResultsChanged: scrollView.contentItem.contentY = 0
 
@@ -44,29 +45,44 @@ ColumnLayout {
         Layout.fillHeight: true
         spacing: Settings.spacing * 2
 
-        ColumnLayout {
+        // Scrolls once the categories outgrow a small page
+        StyledScrollView {
+            id: categoryView
+
             Layout.preferredWidth: root.width / 4
             Layout.fillWidth: false
-            Layout.alignment: Qt.AlignTop
-            spacing: Settings.spacing / 2
+            Layout.fillHeight: true
 
-            Repeater {
-                model: Settings.schema.categories
+            // Room for the focus ring, which the scroll area would cut off
+            readonly property int inset: Settings.focusRingWidth * 2
+            contentHeight: categoryList.implicitHeight + inset * 2
 
-                Button {
-                    required property string modelData
-                    readonly property bool selected: root.query == "" && root.category == modelData
+            ColumnLayout {
+                id: categoryList
 
-                    size: "md"
-                    icon: ""
-                    text: modelData
-                    type: selected ? "primary" : "ghost"
-                    color: selected ? Colors.backgroundSubtle : Colors.foreground
-                    textColor: Colors.text
+                x: categoryView.inset
+                y: categoryView.inset
+                width: categoryView.availableWidth - categoryView.inset * 2
+                spacing: Settings.spacing / 2
 
-                    onClicked: {
-                        search.text = ""
-                        root.category = modelData
+                Repeater {
+                    model: Settings.schema.categories
+
+                    Button {
+                        required property string modelData
+                        readonly property bool selected: root.query == "" && root.category == modelData
+
+                        size: "md"
+                        icon: ""
+                        text: modelData
+                        type: selected ? "primary" : "ghost"
+                        color: selected ? Colors.backgroundSubtle : Colors.foreground
+                        textColor: Colors.text
+
+                        onClicked: {
+                            search.text = ""
+                            root.category = modelData
+                        }
                     }
                 }
             }
@@ -89,12 +105,26 @@ ColumnLayout {
                 Repeater {
                     model: root.results
 
-                    SettingRow {
+                    ColumnLayout {
                         required property var modelData
-                        entry: modelData
-                        showCategory: root.query != ""
+                        required property int index
 
-                        onPageRequested: (page, properties) => root.pageRequested(page, properties)
+                        Layout.fillWidth: true
+                        spacing: Settings.spacing
+
+                        // Over the first setting of each group. Search results name their category instead
+                        GroupLabel {
+                            visible: root.query == "" && modelData.group !== undefined && modelData.group != root.results[index - 1]?.group
+                            text: modelData.group ?? ""
+                            Layout.topMargin: index == 0 ? 0 : Settings.spacing
+                        }
+
+                        SettingRow {
+                            entry: modelData
+                            showCategory: root.query != ""
+
+                            onPageRequested: (page, properties) => root.pageRequested(page, properties)
+                        }
                     }
                 }
 
@@ -113,6 +143,17 @@ ColumnLayout {
                 }
             }
         }
+    }
+
+    // Hidden ones are never listed, ones about several displays only once there are several
+    function available(entry) {
+        if (entry.hidden) return false
+        switch (entry.type) {
+            case "displayMode": return Displays.onCount > 1 || Displays.mirroring
+            case "arrangement":
+            case "display": return Displays.arrangedCount > 1
+        }
+        return true
     }
 
     function matches(entry) {

@@ -15,6 +15,8 @@ QtObject {
 
     // An absolute path, empty until one is picked, which shows the wallpaper pywal last set
     property string wallpaper: value("wallpaper", "")
+    // Wallpapers set for one display, by display key, over the one above
+    property var wallpapers: value("wallpapers", ({}))
     property string wallpaperFolder: value("wallpaperFolder", "~/Pictures/wallpapers")
     property bool autoColors: value("autoColors", false)
 
@@ -41,19 +43,21 @@ QtObject {
     property string headerFont: value("headerFont", "Dela Gothic One")
 
     property int windowSpacing: px(value("windowSpacing", 8))
-    property int spacing: px(value("spacing", 10))
+    property int spacing: px(10)
 
-    property int radiusSm: px(value("radiusSm", 8))
-    property int radiusMd: px(value("radiusMd", 16))
-    property int radiusLg: px(value("radiusLg", 32))
+    // Scales every corner radius together
+    property int roundness: value("roundness", 100)
+    property int radiusSm: px(8 * roundness / 100)
+    property int radiusMd: px(16 * roundness / 100)
+    property int radiusLg: px(32 * roundness / 100)
 
-    property int spinnerSize: px(value("spinnerSize", 24))
+    property int spinnerSize: px(24)
 
     // BUTTON
 
     property var buttonPadding: ({ lg: spacing * 2, md: spacing, sm: spacing })
     property var buttonFontSize: ({ lg: fontSize, md: fontSize, sm: fontSize - px(2) })
-    property int buttonIconSize: px(value("buttonIconSize", 24))
+    property int buttonIconSize: px(24)
 
     // Heights follow from the padding and the taller of icon and text, so buttons never set one explicitly
     readonly property var buttonHeight: ({
@@ -76,9 +80,9 @@ QtObject {
 
     // SCROLLBAR
 
-    property int scrollbarWidth: px(value("scrollbarWidth", 3))
-    property int scrollbarHoverWidth: px(value("scrollbarHoverWidth", 6))
-    property int scrollbarMargin: px(value("scrollbarMargin", 3))
+    property int scrollbarWidth: px(3)
+    property int scrollbarHoverWidth: px(6)
+    property int scrollbarMargin: px(3)
 
     // ANIMATIONS
 
@@ -113,8 +117,8 @@ QtObject {
     // KEYBINDS
 
     property list<string> backShortcuts: ["Escape"]
-    property int backSwipeThreshold: value("backSwipeThreshold", 120)
-    property int backSwipeResetDelay: value("backSwipeResetDelay", 300)
+    property int backSwipeThreshold: 120
+    property int backSwipeResetDelay: 300
     property bool naturalScroll: value("naturalScroll", true) // match the compositor's touchpad setting
 
     // SHORTCUTS
@@ -124,6 +128,7 @@ QtObject {
     property string shortcutLauncher: value("shortcutLauncher", "SUPER + R")
     property string shortcutSettings: value("shortcutSettings", "SUPER + I")
     property string shortcutWallpaper: value("shortcutWallpaper", "SUPER + W")
+    property string shortcutDisplays: value("shortcutDisplays", "SUPER + O")
     // Recording a new shortcut gives up after this long, handing the keyboard back to Hyprland
     property int shortcutRecordTimeout: 10000
 
@@ -133,7 +138,7 @@ QtObject {
     property string barPosition: value("barPosition", "bottom")
     property bool barFloating: value("barFloating", false)
     property int workspaceCount: value("workspaceCount", 9)
-    property int tooltipDelay: value("tooltipDelay", 500)
+    property int tooltipDelay: 500
 
     // OSD
 
@@ -148,11 +153,11 @@ QtObject {
     // Rows fit a large button with room around it, so the grid follows the font size
     property int controlCenterCellSize: buttonHeight.lg + spacing * 3
     property int controlCenterPadding: spacing * 4
-    property int controlCenterHoldDuration: value("controlCenterHoldDuration", 500)
-    property int controlCenterPageHeight: px(value("controlCenterPageHeight", 500))
-    property int settingsPageSize: px(value("settingsPageSize", 720))
-    property int wifiRescanDelay: value("wifiRescanDelay", 1500)
-    property int bluetoothScanDuration: value("bluetoothScanDuration", 20000)
+    property int controlCenterHoldDuration: 500
+    property int controlCenterPageHeight: px(500)
+    property int settingsPageSize: px(720)
+    property int wifiRescanDelay: 1500
+    property int bluetoothScanDuration: 20000
 
     // LAUNCHER
 
@@ -172,6 +177,28 @@ QtObject {
     // How often the volume mixer looks for apps that connected or quit
     property int audioClientRefresh: 3000
 
+    // DISPLAYS
+
+    // Key of the display the bar, the control center and pop-ups show on. Empty picks the built in one, or the first
+    property string mainDisplay: value("mainDisplay", "")
+
+    // Changed display settings go back unless kept within this long, in case a display went dark
+    property int displayConfirmTimeout: 15000
+    // Scales that would leave a display shorter than this aren't offered
+    property int displayMinLogicalHeight: 600
+    property int displayCanvasHeight: px(220)
+    // How close a dragged display has to get to lining up with another before it snaps to it
+    property int displaySnapDistance: px(16)
+    // Wait after displays are plugged in or out before putting a saved layout back, while Hyprland sets them up
+    property int displaySettleDelay: 1500
+    // Gap between turning mirrors off and on, since Hyprland drops both done at once
+    property int displayMirrorDelay: 300
+
+    // DROPDOWN
+
+    // Tallest an open dropdown list gets before it scrolls
+    property int dropdownMaxHeight: px(280)
+
     // KEYBOARD
 
     // Outline around whatever the keyboard is on
@@ -181,16 +208,16 @@ QtObject {
 
     // SLIDERS
 
-    property int sliderScrollStep: value("sliderScrollStep", 5)
+    property int sliderScrollStep: 5
     property int brightnessMin: value("brightnessMin", 5) // 0% turns some backlights fully off
 
     // CPU
 
-    property int cpuHotTemp: value("cpuHotTemp", 80)
+    property int cpuHotTemp: 80
 
     // POWER
 
-    property int powerConfirmTimeout: value("powerConfirmTimeout", 3000)
+    property int powerConfirmTimeout: 3000
     property var powerCommands: ({
         lock: ["hyprlock"],
         sleep: ["systemctl", "suspend"],

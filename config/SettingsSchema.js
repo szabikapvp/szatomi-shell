@@ -2,6 +2,7 @@
 
 // Describes every setting the Settings page can change: where it's listed, which control it gets,
 // and the range it's held to. To add one, declare it in Settings.qml with value() and describe it here.
+// Only what people actually tune belongs here, the rest stays a plain property in Settings.qml.
 //
 // Types:
 //   bool    toggle
@@ -11,16 +12,23 @@
 //   format  a Qt date/time format string, up to maxFormatLength characters
 //   path    a file or folder path, ~ allowed
 //   color   a #rrggbb color
-//   wallpaper  the current wallpaper, with a button that opens the selector
+//   wallpaper  the wallpaper of every display or of one, with a button that opens the selector
+//   wallpapers per display wallpapers, by display. Not listed, the wallpaper row sets it
 //   mixer      volume of every app that's playing. Stores nothing
 //   devices    output devices, or input devices with input: true, each opening its own page. Stores nothing
 //   shortcut   a key combo as Hyprland writes it, like SUPER + I, recorded by pressing it
+//   display    one of the connected displays, empty for automatic
+//   displayMode     extend or mirror, and which display is mirrored. Stores nothing
+//   arrangement     where the displays sit next to each other. Stores nothing
+//   displays   every connected display, each opening its own page. Stores nothing
 //
+// group is a small heading the setting is listed under within its category, kept in order here.
+// hidden settings are stored and checked like the rest, but never listed.
 // overriddenBy names a bool setting that, while on, takes over the setting and greys its row out.
 //
 // Ranges are picked so that no combination of values breaks the layout on a 1080p screen.
 
-var categories = ["Appearance", "Theme", "Layout", "Bar", "Control center", "Launcher", "Audio", "Animations", "Date & time", "Input", "Shortcuts", "System"]
+var categories = ["Appearance", "Theme", "Displays", "Bar", "Control center", "Launcher", "Audio", "Animations", "Date & time", "Input"]
 
 var maxFormatLength = 32
 
@@ -29,82 +37,65 @@ var shortcutPattern = /^((SUPER|CTRL|ALT|SHIFT) \+ )*[A-Za-z0-9_]+$|^((SUPER|CTR
 
 var entries = [
     // APPEARANCE
-    { key: "uiScale", category: "Appearance", label: "Scale", description: "Size of everything in the shell", type: "choice", options: ["75%", "100%", "125%", "150%"] },
-    { key: "fontFamily", category: "Appearance", label: "Font", description: "Used for all regular text", type: "font" },
-    { key: "headerFont", category: "Appearance", label: "Display font", description: "Used for large numbers like the clock", type: "font" },
-    { key: "fontSize", category: "Appearance", label: "Font size", description: "Buttons and the control center grid grow with it", type: "int", min: 12, max: 20, step: 1, unit: "px" },
-    { key: "buttonIconSize", category: "Appearance", label: "Icon size", type: "int", min: 16, max: 28, step: 1, unit: "px" },
-    { key: "radiusSm", category: "Appearance", label: "Small corner radius", type: "int", min: 0, max: 16, step: 1, unit: "px" },
-    { key: "radiusMd", category: "Appearance", label: "Medium corner radius", type: "int", min: 0, max: 24, step: 1, unit: "px" },
-    { key: "radiusLg", category: "Appearance", label: "Large corner radius", description: "Also rounds the control center panel", type: "int", min: 0, max: 40, step: 1, unit: "px" },
-    { key: "spinnerSize", category: "Appearance", label: "Loading indicator size", type: "int", min: 16, max: 32, step: 1, unit: "px" },
+    { key: "uiScale", category: "Appearance", group: "Size", label: "Scale", description: "Size of everything in the shell", type: "choice", options: ["75%", "100%", "125%", "150%"] },
+    { key: "fontSize", category: "Appearance", group: "Size", label: "Font size", description: "Buttons and the control center grid grow with it", type: "int", min: 12, max: 20, step: 1, unit: "px" },
+    { key: "fontFamily", category: "Appearance", group: "Fonts", label: "Font", description: "Used for all regular text", type: "font" },
+    { key: "headerFont", category: "Appearance", group: "Fonts", label: "Display font", description: "Used for large numbers like the clock", type: "font" },
+    { key: "roundness", category: "Appearance", group: "Shape", label: "Roundness", description: "Corners of panels, buttons and cards", type: "int", min: 0, max: 125, step: 5, unit: "%" },
+    { key: "windowSpacing", category: "Appearance", group: "Shape", label: "Window spacing", description: "Gap between floating panels and the screen edges", type: "int", min: 0, max: 16, step: 1, unit: "px" },
 
     // THEME
-    { key: "wallpaper", category: "Theme", label: "Wallpaper", type: "wallpaper" },
-    { key: "wallpaperFolder", category: "Theme", label: "Wallpaper folder", description: "Where the wallpaper selector looks for images", type: "path" },
-    { key: "autoColors", category: "Theme", label: "Colors from wallpaper", description: "Generate the palette with pywal whenever the wallpaper changes", type: "bool" },
-    { key: "colorBackground", category: "Theme", label: "Background", description: "Panels and the bar", type: "color", overriddenBy: "autoColors" },
-    { key: "colorForeground", category: "Theme", label: "Foreground", description: "Hover and pressed highlights, slider fills", type: "color", overriddenBy: "autoColors" },
-    { key: "colorPrimary", category: "Theme", label: "Accent", description: "Active toggles and highlights", type: "color", overriddenBy: "autoColors" },
-    { key: "colorText", category: "Theme", label: "Text", description: "Text and icons", type: "color", overriddenBy: "autoColors" },
+    { key: "wallpaper", category: "Theme", group: "Wallpaper", label: "Wallpaper", type: "wallpaper" },
+    { key: "wallpapers", category: "Theme", label: "Display wallpapers", type: "wallpapers", hidden: true },
+    { key: "wallpaperFolder", category: "Theme", group: "Wallpaper", label: "Wallpaper folder", description: "Where the wallpaper selector looks for images", type: "path" },
+    { key: "autoColors", category: "Theme", group: "Colors", label: "Colors from wallpaper", description: "Generate the palette with pywal whenever the main display's wallpaper changes", type: "bool" },
+    { key: "colorBackground", category: "Theme", group: "Colors", label: "Background", description: "Panels and the bar", type: "color", overriddenBy: "autoColors" },
+    { key: "colorForeground", category: "Theme", group: "Colors", label: "Foreground", description: "Hover and pressed highlights, slider fills", type: "color", overriddenBy: "autoColors" },
+    { key: "colorPrimary", category: "Theme", group: "Colors", label: "Accent", description: "Active toggles and highlights", type: "color", overriddenBy: "autoColors" },
+    { key: "colorText", category: "Theme", group: "Colors", label: "Text", description: "Text and icons", type: "color", overriddenBy: "autoColors" },
 
-    // LAYOUT
-    { key: "windowSpacing", category: "Layout", label: "Window spacing", description: "Gap between floating panels and the screen edges", type: "int", min: 0, max: 16, step: 1, unit: "px" },
-    { key: "spacing", category: "Layout", label: "Spacing", description: "Gap between elements, also sets button padding", type: "int", min: 6, max: 12, step: 1, unit: "px" },
-    { key: "scrollbarWidth", category: "Layout", label: "Scrollbar width", type: "int", min: 2, max: 6, step: 1, unit: "px" },
-    { key: "scrollbarHoverWidth", category: "Layout", label: "Scrollbar hover width", type: "int", min: 4, max: 10, step: 1, unit: "px" },
-    { key: "scrollbarMargin", category: "Layout", label: "Scrollbar margin", type: "int", min: 0, max: 6, step: 1, unit: "px" },
+    // DISPLAYS
+    { key: "displayMode", category: "Displays", group: "Layout", label: "Multiple displays", type: "displayMode" },
+    { key: "arrangement", category: "Displays", group: "Layout", label: "Arrangement", description: "Drag the displays to match where they sit. Arrow keys move the selected one, Enter opens it", type: "arrangement" },
+    { key: "mainDisplay", category: "Displays", group: "Layout", label: "Main display", description: "Where the bar, the control center and pop-ups show up", type: "display" },
+    { key: "displays", category: "Displays", group: "Connected", label: "Displays", description: "Pick one for its resolution, refresh rate, scale and rotation", type: "displays" },
+    { key: "brightnessMin", category: "Displays", group: "Brightness", label: "Minimum brightness", description: "Lowest level the brightness slider can set", type: "int", min: 5, max: 30, step: 1, unit: "%" },
 
     // BAR
-    { key: "barPosition", category: "Bar", label: "Position", type: "choice", options: ["top", "bottom"] },
-    { key: "barFloating", category: "Bar", label: "Floating", description: "Detach the bar from the screen edge", type: "bool" },
-    { key: "barHeight", category: "Bar", label: "Height", type: "int", min: 36, max: 60, step: 1, unit: "px" },
-    { key: "workspaceCount", category: "Bar", label: "Workspaces", description: "Number of workspace dots", type: "int", min: 1, max: 10, step: 1, unit: "" },
-    { key: "tooltipDelay", category: "Bar", label: "Tooltip delay", description: "How long to hover a bar icon before its tooltip shows", type: "int", min: 100, max: 1500, step: 50, unit: "ms" },
+    { key: "barPosition", category: "Bar", group: "Placement", label: "Position", type: "choice", options: ["top", "bottom"] },
+    { key: "barFloating", category: "Bar", group: "Placement", label: "Floating", description: "Detach the bar from the screen edge", type: "bool" },
+    { key: "barHeight", category: "Bar", group: "Placement", label: "Height", type: "int", min: 36, max: 60, step: 1, unit: "px" },
+    { key: "workspaceCount", category: "Bar", group: "Workspaces", label: "Workspaces", description: "Number of workspace dots", type: "int", min: 1, max: 10, step: 1, unit: "" },
 
     // CONTROL CENTER
-    { key: "controlCenterColumns", category: "Control center", label: "Columns", description: "Widgets that no longer fit are hidden until there's room again", type: "int", min: 3, max: 5, step: 1, unit: "" },
-    { key: "controlCenterMaxRows", category: "Control center", label: "Rows", description: "Most rows the grid can grow to", type: "int", min: 2, max: 6, step: 1, unit: "" },
-    { key: "controlCenterHoldDuration", category: "Control center", label: "Hold to edit", description: "How long to hold before the grid starts editing", type: "int", min: 300, max: 1500, step: 50, unit: "ms" },
-    { key: "controlCenterPageHeight", category: "Control center", label: "Page height", description: "Height of the Wi-Fi and Bluetooth pages", type: "int", min: 400, max: 700, step: 10, unit: "px" },
-    { key: "settingsPageSize", category: "Control center", label: "Settings page size", type: "int", min: 600, max: 800, step: 10, unit: "px" },
-    { key: "sliderScrollStep", category: "Control center", label: "Slider scroll step", description: "How much one scroll moves a volume or brightness slider", type: "int", min: 1, max: 20, step: 1, unit: "%" },
+    { key: "controlCenterColumns", category: "Control center", group: "Grid", label: "Columns", description: "Widgets that no longer fit are hidden until there's room again", type: "int", min: 3, max: 5, step: 1, unit: "" },
+    { key: "controlCenterMaxRows", category: "Control center", group: "Grid", label: "Rows", description: "Most rows the grid can grow to", type: "int", min: 2, max: 6, step: 1, unit: "" },
 
     // LAUNCHER
-    { key: "launcherWidth", category: "Launcher", label: "Width", type: "int", min: 360, max: 800, step: 10, unit: "px" },
-    { key: "launcherHeight", category: "Launcher", label: "Height", type: "int", min: 300, max: 700, step: 10, unit: "px" },
+    { key: "launcherWidth", category: "Launcher", group: "Size", label: "Width", type: "int", min: 360, max: 800, step: 10, unit: "px" },
+    { key: "launcherHeight", category: "Launcher", group: "Size", label: "Height", type: "int", min: 300, max: 700, step: 10, unit: "px" },
 
     // AUDIO
-    { key: "audioMixer", category: "Audio", label: "Volume mixer", description: "Apps that play or can play sound. Quiet ones start at the volume set here", type: "mixer" },
-    { key: "audioOutputs", category: "Audio", label: "Output devices", description: "Pick one to set its volume, balance, profile and port", type: "devices" },
-    { key: "audioInputs", category: "Audio", label: "Input devices", description: "Pick one to set its volume, profile and port, or test its level", type: "devices", input: true },
+    { key: "audioMixer", category: "Audio", group: "Apps", label: "Volume mixer", description: "Apps that play or can play sound. Quiet ones start at the volume set here", type: "mixer" },
+    { key: "audioOutputs", category: "Audio", group: "Devices", label: "Output devices", description: "Pick one to set its volume, balance, profile and port", type: "devices" },
+    { key: "audioInputs", category: "Audio", group: "Devices", label: "Input devices", description: "Pick one to set its volume, profile and port, or test its level", type: "devices", input: true },
 
     // ANIMATIONS
-    { key: "animationSpeed", category: "Animations", label: "Speed", description: "How quickly everything moves, higher is faster", type: "int", min: 50, max: 200, step: 10, unit: "%" },
-    { key: "reduceMotion", category: "Animations", label: "Reduce motion", description: "Fade instead of sliding and growing", type: "bool" },
+    { key: "animationSpeed", category: "Animations", group: "Motion", label: "Speed", description: "How quickly everything moves, higher is faster", type: "int", min: 50, max: 200, step: 10, unit: "%" },
+    { key: "reduceMotion", category: "Animations", group: "Motion", label: "Reduce motion", description: "Fade instead of sliding and growing", type: "bool" },
 
     // DATE & TIME
-    { key: "timeFormat", category: "Date & time", label: "Time format", description: "For example h:mm or HH:mm", type: "format" },
-    { key: "dateFormat", category: "Date & time", label: "Date format", description: "Shown in the bar, for example MM/dd ddd", type: "format" },
-    { key: "longDateFormat", category: "Date & time", label: "Long date format", description: "Shown on the clock widget, for example dddd, MMMM d", type: "format" },
+    { key: "timeFormat", category: "Date & time", group: "Formats", label: "Time format", description: "For example h:mm or HH:mm", type: "format" },
+    { key: "dateFormat", category: "Date & time", group: "Formats", label: "Date format", description: "Shown in the bar, for example MM/dd ddd", type: "format" },
+    { key: "longDateFormat", category: "Date & time", group: "Formats", label: "Long date format", description: "Shown on the clock widget, for example dddd, MMMM d", type: "format" },
 
     // INPUT
-    { key: "naturalScroll", category: "Input", label: "Natural scrolling", description: "Match the compositor's touchpad setting", type: "bool" },
-    { key: "backSwipeThreshold", category: "Input", label: "Back swipe distance", description: "How far to swipe right with two fingers to go back", type: "int", min: 60, max: 300, step: 10, unit: "px" },
-    { key: "backSwipeResetDelay", category: "Input", label: "Back swipe reset", description: "Pause that ends a swipe", type: "int", min: 100, max: 1000, step: 50, unit: "ms" },
-
-    // SHORTCUTS
-    { key: "shortcutControlCenter", category: "Shortcuts", label: "Control center", description: "Opens or closes the control center", type: "shortcut" },
-    { key: "shortcutLauncher", category: "Shortcuts", label: "App launcher", description: "Type > in it for commands", type: "shortcut" },
-    { key: "shortcutSettings", category: "Shortcuts", label: "Settings", description: "Opens the settings", type: "shortcut" },
-    { key: "shortcutWallpaper", category: "Shortcuts", label: "Change wallpaper", description: "Opens the wallpaper selector", type: "shortcut" },
-
-    // SYSTEM
-    { key: "cpuHotTemp", category: "System", label: "CPU hot temperature", description: "From here on the CPU temperature turns red", type: "int", min: 60, max: 95, step: 1, unit: "°C" },
-    { key: "brightnessMin", category: "System", label: "Minimum brightness", description: "Lowest level the brightness slider can set", type: "int", min: 5, max: 30, step: 1, unit: "%" },
-    { key: "wifiRescanDelay", category: "System", label: "Wi-Fi rescan delay", description: "Wait after turning Wi-Fi on before scanning", type: "int", min: 500, max: 5000, step: 100, unit: "ms" },
-    { key: "bluetoothScanDuration", category: "System", label: "Bluetooth scan duration", type: "int", min: 5000, max: 60000, step: 1000, unit: "ms" },
-    { key: "powerConfirmTimeout", category: "System", label: "Power confirm timeout", description: "How long Restart and Shut down wait for the second click", type: "int", min: 1000, max: 10000, step: 500, unit: "ms" }
+    { key: "naturalScroll", category: "Input", group: "Scrolling", label: "Natural scrolling", description: "Match the compositor's touchpad setting", type: "bool" },
+    { key: "shortcutControlCenter", category: "Input", group: "Shortcuts", label: "Control center", description: "Opens or closes the control center", type: "shortcut" },
+    { key: "shortcutLauncher", category: "Input", group: "Shortcuts", label: "App launcher", description: "Type > in it for commands", type: "shortcut" },
+    { key: "shortcutSettings", category: "Input", group: "Shortcuts", label: "Settings", description: "Opens the settings", type: "shortcut" },
+    { key: "shortcutWallpaper", category: "Input", group: "Shortcuts", label: "Change wallpaper", description: "Opens the wallpaper selector", type: "shortcut" },
+    { key: "shortcutDisplays", category: "Input", group: "Shortcuts", label: "Display settings", description: "Opens the display settings", type: "shortcut" }
 ]
 
 // Symbol and emoji fonts render text unreadable, which would also hide the way back
@@ -137,6 +128,16 @@ function sanitize(entry, value) {
 
         case "format":
             return typeof value === "string" && value.trim() !== "" && value.length <= maxFormatLength ? value : undefined
+
+        case "display":
+            return typeof value === "string" ? value : undefined
+
+        case "wallpapers": {
+            if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined
+            const valid = {}
+            for (const display in value) if (typeof value[display] === "string" && value[display] !== "") valid[display] = value[display]
+            return valid
+        }
 
         case "path":
         case "wallpaper":

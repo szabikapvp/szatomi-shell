@@ -116,7 +116,10 @@ Rectangle {
             // An inactive Loader still takes up layout spacing
             visible: active
             Layout.fillWidth: true
-            sourceComponent: ({ int: slider, wallpaper: wallpaperEditor, mixer: mixer, devices: devices, shortcut: shortcut })[root.entry.type] ?? textField
+            sourceComponent: ({
+                int: slider, wallpaper: wallpaperEditor, mixer: mixer, devices: devices, shortcut: shortcut,
+                displayMode: displayMode, arrangement: arrangement, display: displayPicker, displays: displayList
+            })[root.entry.type] ?? textField
         }
     }
 
@@ -132,25 +135,10 @@ Rectangle {
     Component {
         id: choice
 
-        RowLayout {
-            spacing: Settings.spacing / 2
-
-            Repeater {
-                model: root.entry.options
-
-                Button {
-                    required property string modelData
-
-                    size: "sm"
-                    icon: ""
-                    text: modelData.charAt(0).toUpperCase() + modelData.slice(1)
-                    color: root.current == modelData ? Colors.primary : Qt.alpha(Colors.foreground, 0.1)
-                    textColor: Colors.text
-                    Layout.fillWidth: false
-
-                    onClicked: Settings.set(root.entry.key, modelData)
-                }
-            }
+        Choices {
+            options: root.entry.options.map(option => ({ text: option.charAt(0).toUpperCase() + option.slice(1), value: option }))
+            current: root.current
+            onPicked: (value) => Settings.set(root.entry.key, value)
         }
     }
 
@@ -167,12 +155,20 @@ Rectangle {
         }
     }
 
-    // The current wallpaper, and the way to the selector
+    // The wallpaper of every display or of the one picked, and the way to the selector
     Component {
         id: wallpaperEditor
 
         ColumnLayout {
             spacing: Settings.spacing
+
+            // Each display can have its own once there are several. The selector sets the one picked here
+            Dropdown {
+                visible: Displays.arrangedCount > 1
+                options: [{ text: "All displays", value: "" }].concat(Displays.arranged.map(config => ({ text: config.label, value: config.key })))
+                current: Wallpaper.target
+                onPicked: (value) => Wallpaper.target = value
+            }
 
             ClippingRectangle {
                 Layout.fillWidth: true
@@ -183,7 +179,7 @@ Rectangle {
 
                 Image {
                     anchors.fill: parent
-                    source: Wallpaper.current ? "file://" + Wallpaper.current : ""
+                    source: Wallpaper.selected ? "file://" + Wallpaper.selected : ""
                     sourceSize.width: width
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
@@ -195,7 +191,7 @@ Rectangle {
                 spacing: Settings.spacing
 
                 Text {
-                    text: Wallpaper.current ? Wallpaper.current.split("/").pop() : "No wallpaper"
+                    text: Wallpaper.selected ? Wallpaper.selected.split("/").pop() : "No wallpaper"
                     color: Qt.alpha(Colors.text, 0.6)
                     font.pixelSize: Settings.fontSize - Settings.px(2)
                     font.family: Settings.fontFamily
@@ -396,6 +392,114 @@ Rectangle {
                 font.pixelSize: Settings.fontSize - Settings.px(2)
                 font.family: Settings.fontFamily
                 Layout.fillWidth: true
+            }
+        }
+    }
+
+    // Extending or mirroring, and which display the others mirror
+    Component {
+        id: displayMode
+
+        ColumnLayout {
+            spacing: Settings.spacing / 2
+
+            Choices {
+                options: [{ text: "Extend", value: false }, { text: "Mirror", value: true }]
+                current: Displays.mirroring
+                onPicked: (value) => Displays.setMirrorSource(value ? Displays.defaultSource() : "")
+            }
+
+            Text {
+                visible: Displays.mirroring
+                text: "Picture from"
+                color: Qt.alpha(Colors.text, 0.6)
+                font.pixelSize: Settings.fontSize - Settings.px(2)
+                font.family: Settings.fontFamily
+                Layout.topMargin: Settings.spacing / 2
+            }
+
+            Choices {
+                visible: Displays.mirroring
+                options: Displays.shown.filter(config => !config.disabled).map(config => ({ text: config.label, value: config.key }))
+                current: Displays.mirrorSource
+                onPicked: (value) => Displays.setMirrorSource(value)
+            }
+        }
+    }
+
+    Component {
+        id: arrangement
+
+        DisplayArrangement {
+            onOpened: (key) => root.pageRequested(Qt.resolvedUrl("DisplayPage.qml"), { key: key })
+        }
+    }
+
+    // Automatic follows whichever display is built in, or the first, so unplugging the picked one never strands the bar
+    Component {
+        id: displayPicker
+
+        Dropdown {
+            options: [{ text: "Automatic", value: "" }].concat(Displays.arranged.map(config => ({ text: config.label, value: config.key })))
+            // One that isn't connected right now leaves it automatic
+            current: Displays.arranged.some(config => config.key == root.current) ? root.current : ""
+            onPicked: (value) => Settings.set(root.entry.key, value)
+        }
+    }
+
+    // Every connected display, each opening its own page, and the way back to the Hyprland config
+    Component {
+        id: displayList
+
+        ColumnLayout {
+            spacing: 0
+
+            Repeater {
+                model: Displays.shown
+
+                DisplayItem {
+                    required property var modelData
+                    config: modelData
+
+                    onClicked: root.pageRequested(Qt.resolvedUrl("DisplayPage.qml"), { key: config.key })
+                }
+            }
+
+            Text {
+                visible: Displays.shown.length === 0
+                text: "No displays found"
+                color: Qt.alpha(Colors.text, 0.6)
+                font.pixelSize: Settings.fontSize - Settings.px(2)
+                font.family: Settings.fontFamily
+                Layout.fillWidth: true
+            }
+
+            RowLayout {
+                visible: Displays.saved
+                Layout.fillWidth: true
+                Layout.topMargin: Settings.spacing
+                spacing: Settings.spacing
+
+                Text {
+                    text: "Changes are saved for this set of displays"
+                    color: Qt.alpha(Colors.text, 0.6)
+                    font.pixelSize: Settings.fontSize - Settings.px(2)
+                    font.family: Settings.fontFamily
+                    wrapMode: Text.Wrap
+                    Layout.fillWidth: true
+                }
+
+                Button {
+                    size: "sm"
+                    icon: ""
+                    text: "Use Hyprland config"
+                    type: "ghost"
+                    color: Colors.foreground
+                    textColor: Colors.text
+                    Layout.fillWidth: false
+
+                    onClicked: Displays.useConfig()
+                }
             }
         }
     }

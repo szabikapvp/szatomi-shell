@@ -15,43 +15,68 @@ import qs.config
 
 ShellRoot {
 
-    PanelWindow {
+    // Each display shows its own wallpaper, or the one for all of them
+    Variants {
+        model: Quickshell.screens
 
-        id: wallpaperWindow
+        PanelWindow {
+            id: wallpaperWindow
 
-        anchors {
-            top: true
-            bottom: true
-            left: true
-            right: true
-        }
+            required property var modelData
+            readonly property string wallpaper: Wallpaper.forScreen(modelData.name)
 
-        aboveWindows: false
-        exclusionMode: ExclusionMode.Ignore
+            screen: modelData
 
-        Image {
-            anchors.fill: parent
-            source: Wallpaper.current ? "file://" + Wallpaper.current : ""
-            fillMode: Image.PreserveAspectCrop 
+            anchors {
+                top: true
+                bottom: true
+                left: true
+                right: true
+            }
+
+            aboveWindows: false
+            exclusionMode: ExclusionMode.Ignore
+
+            Image {
+                anchors.fill: parent
+                source: wallpaperWindow.wallpaper ? "file://" + wallpaperWindow.wallpaper : ""
+                fillMode: Image.PreserveAspectCrop
+            }
         }
     }
 
+    // The bar, the control center and pop-ups live on the main display
     SliderPopup {
+        screen: Displays.mainScreen
         icon: BrightnessIcon {}
         prop: Brightness.getLevel()
         suppressed: controlCenterWindow.showing
     }
 
     SliderPopup {
+        screen: Displays.mainScreen
         icon: VolumeIcon {}
         prop: Audio.getLevel()
         suppressed: controlCenterWindow.showing
     }
 
-    ControlCenter { id: controlCenterWindow }
+    ControlCenter {
+        id: controlCenterWindow
+        screen: Displays.mainScreen
+    }
+
+    Bar {
+        modelData: Displays.mainScreen
+        controlCenter: controlCenterWindow
+    }
 
     Variants {
         model: Quickshell.screens
-        Bar { controlCenter: controlCenterWindow }
+        DisplayBadge {}
+    }
+
+    Variants {
+        model: Quickshell.screens
+        DisplayConfirm {}
     }
 }
