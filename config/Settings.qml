@@ -139,6 +139,8 @@ QtObject {
     property bool barFloating: value("barFloating", false)
     property int workspaceCount: value("workspaceCount", 9)
     property int tooltipDelay: 500
+    // Room around a bar button's content, which its hover highlight fills
+    property int barButtonPadding: px(8)
 
     // OSD
 
@@ -210,6 +212,11 @@ QtObject {
 
     property int sliderScrollStep: 5
     property int brightnessMin: value("brightnessMin", 5) // 0% turns some backlights fully off
+
+    // BATTERY
+
+    // At or below this percentage, while unplugged, the bar's battery turns the accent color
+    property int batteryLowLevel: 20
 
     // CPU
 

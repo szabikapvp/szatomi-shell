@@ -6,78 +6,74 @@ import "../../components"
 
 import qs.config
 import qs.services
+import qs.utils
 
+// Battery level with a bolt over it while plugged in. Only meaningful once Battery.available
 Item {
     id: root
 
-    property color color: Colors.text
+    // Turns the accent color when the battery runs low
+    property bool warn: Battery.low
+    property color color: warn ? Colors.primary : Colors.text
+
+    Behavior on color { ColorAnim {} }
 
     Layout.preferredWidth: Settings.px(18)
     Layout.preferredHeight: Settings.px(18)
-    
     Layout.alignment: Qt.AlignVCenter
 
     Icon {
-        id: bottomIcon
+        id: body
         anchors.fill: parent
         visible: false
         color: root.color
-
-        icon: {
-            if (Battery.getLevel() <= 15) return "battery-0"
-            if (Battery.getLevel() <= 30) return "battery-1"
-            if (Battery.getLevel() <= 45) return "battery-2"
-            if (Battery.getLevel() <= 50) return "battery-3"
-            if (Battery.getLevel() <= 65) return "battery-4"
-            if (Battery.getLevel() <= 80) return "battery-5"
-            if (Battery.getLevel() <= 95) return "battery-6"
-            if (Battery.getLevel() <= 100) return "battery-7"
-            return "battery-0"
-        }
+        icon: Battery.icon
     }
 
+    // The bolt alone, grown into an outline that's cut out of the battery, so the two don't blend together
     Item {
-        id: topLayer
+        id: boltShape
         anchors.fill: parent
+        visible: false
 
         Icon {
             icon: "bolt"
             color: root.color
-            visible: Battery.isCharging()
+            opacity: bolt.opacity
             anchors.centerIn: parent
-            anchors.horizontalCenterOffset: -Settings.px(8)
-            size: Settings.px(14)
+            anchors.horizontalCenterOffset: bolt.anchors.horizontalCenterOffset
+            size: bolt.size
         }
     }
 
     DropShadow {
-        id: outlineMask
-        anchors.fill: topLayer
-        source: topLayer
+        id: boltOutline
+        anchors.fill: boltShape
+        source: boltShape
         radius: Settings.px(2)
         samples: 17
-        spread: 1.0    
-        color: "blue"
+        spread: 1.0
+        color: root.color
         transparentBorder: true
         visible: false
     }
 
     OpacityMask {
-        anchors.fill: bottomIcon
-        source: bottomIcon
-        maskSource: outlineMask
+        anchors.fill: body
+        source: body
+        maskSource: boltOutline
         invert: true
     }
 
     Icon {
+        id: bolt
         icon: "bolt"
         color: root.color
-        visible: Battery.isCharging()
+        opacity: Battery.pluggedIn ? 1 : 0
         anchors.centerIn: parent
         anchors.horizontalCenterOffset: -Settings.px(8)
         size: Settings.px(14)
+
+        Behavior on opacity { Fade {} }
     }
-
-
-
 }

@@ -19,6 +19,10 @@ PanelWindow {
     // Icons open its pages
     property var controlCenter
 
+    readonly property url wifiPage: Qt.resolvedUrl("../controlcenter/WifiPage.qml")
+    readonly property url powerPage: Qt.resolvedUrl("../controlcenter/PowerPage.qml")
+    readonly property url settingsPage: Qt.resolvedUrl("../controlcenter/SettingsPage.qml")
+
     anchors {
         top: Settings.barPosition == "top"
         bottom: Settings.barPosition == "bottom"
@@ -61,9 +65,8 @@ PanelWindow {
                 spacing: Settings.spacing
                 
                 BarButton {
-                    id: cpuButton
                     tooltip: "CPU load " + Processor.usage + "%"
-                    CpuTemp { color: cpuButton.tint }
+                    CpuTemp {}
                 }
                 //CpuUsage {}
                 //MemoryUsage {}
@@ -116,7 +119,7 @@ PanelWindow {
 
                 // Left click opens the Wi-Fi page, right click turns Wi-Fi on or off
                 BarButton {
-                    id: wifiButton
+                    active: bar.controlCenter?.currentPage === bar.wifiPage.toString()
                     tooltip: {
                         if (Network.ethernet) return "Ethernet"
                         if (!Network.wifiEnabled) return "Wi-Fi off"
@@ -127,33 +130,37 @@ PanelWindow {
 
                     onClicked: (mouse) => {
                         if (mouse.button == Qt.RightButton) Network.toggleWifi()
-                        else bar.controlCenter?.togglePage(Qt.resolvedUrl("../controlcenter/WifiPage.qml"))
+                        else bar.controlCenter?.togglePage(bar.wifiPage)
                     }
 
-                    WifiIcon { color: wifiButton.tint }
+                    WifiIcon {}
                 }
 
+                // Left out until UPower has read the battery, and on machines without one
                 BarButton {
                     id: batteryButton
-                    tooltip: Battery.level + "%" + (Battery.charging ? " · Charging" : "")
+                    visible: Battery.available
+                    active: bar.controlCenter?.currentPage === bar.powerPage.toString()
+                    tooltip: Battery.level + "%" + (Battery.status ? " · " + Battery.status : "")
 
-                    onClicked: bar.controlCenter?.togglePage(Qt.resolvedUrl("../controlcenter/PowerPage.qml"))
+                    onClicked: bar.controlCenter?.togglePage(bar.powerPage)
 
-                    BatteryIcon { color: batteryButton.tint }
+                    // The low warning is the accent color too, so it would vanish on the accent fill
+                    BatteryIcon { warn: Battery.low && !batteryButton.active }
                 }
 
                 // Click opens the audio settings, right click mutes, scrolling changes the volume
                 BarButton {
-                    id: volumeButton
+                    active: bar.controlCenter?.currentPage === bar.settingsPage.toString() && bar.controlCenter.visiblePage.category === "Audio"
                     tooltip: Audio.isMuted ? "Muted" : "Volume " + Audio.level + "%"
 
                     onClicked: (mouse) => {
-                        if (mouse.button == Qt.LeftButton) bar.controlCenter?.togglePage(Qt.resolvedUrl("../controlcenter/SettingsPage.qml"), { category: "Audio" })
+                        if (mouse.button == Qt.LeftButton) bar.controlCenter?.togglePage(bar.settingsPage, { category: "Audio" })
                         else Audio.toggleMute()
                     }
                     onScrolled: (notches) => Audio.adjust(notches * Settings.sliderScrollStep)
 
-                    VolumeIcon { color: volumeButton.tint }
+                    VolumeIcon {}
                 }
 
                 DateText {}

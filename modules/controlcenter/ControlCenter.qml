@@ -24,6 +24,8 @@ PanelWindow {
     // The grid, or a page opened from it
     property Item visiblePage: pageLoader.item ?? mainPage
     property bool showing: false
+    // The page showing, empty for the grid or while closed, so whatever opened it can light up
+    readonly property string currentPage: showing ? pageLoader.source.toString() : ""
     // Showing too, since reopening right as it closes can swing the spring just past closed for a frame
     visible: showing || panel.progress > 0
 
