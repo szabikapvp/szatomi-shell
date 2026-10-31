@@ -14,7 +14,6 @@ Singleton {
 
     property bool wifiEnabled: false
     property bool wifiScanning: false
-    property bool wifiConnecting: connectProc.running
     property Connection wifiConnectTarget
     readonly property list<Connection> wifiNetworks: []
     readonly property Connection active: wifiNetworks.find(n => n.active) ?? null

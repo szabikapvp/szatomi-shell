@@ -63,6 +63,25 @@ Singleton {
         onExited: if (Settings.autoColors && root.generatedFor != root.current) root.generate()
     }
 
+    // hyprlock can't read the shell's palette, so it gets a copy of the one in use, generated or custom
+    readonly property string lockTheme: [
+        `$wallpaper = ${current}`,
+        `$background = ${hyprColor(Colors.background)}`,
+        `$text = ${hyprColor(Colors.text)}`
+    ].join("\n") + "\n"
+
+    function hyprColor(color) {
+        return "rgb(" + color.toString().slice(-6) + ")"
+    }
+
+    onLockThemeChanged: lockThemeFile.setText(lockTheme)
+    Component.onCompleted: lockThemeFile.setText(lockTheme)
+
+    FileView {
+        id: lockThemeFile
+        path: Quickshell.env("HOME") + "/.cache/quickshell/hyprlock.conf"
+    }
+
     // Turning it on generates a palette for the current wallpaper, unless pywal already has one
     Connections {
         target: Settings

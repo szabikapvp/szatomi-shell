@@ -10,10 +10,6 @@ Item {
 
     property string color: Colors.text
     property string icon: "disk" 
-    property string iconId: "iconIcon"
-
-    property bool isVisible: true
-
     property int size: Settings.px(18)
 
     Layout.preferredWidth: size
@@ -26,7 +22,7 @@ Item {
 
     Image {
         id: iconId
-        source: icon != "" ? "file:///home/tomi/.config/quickshell/icons/" + icon + ".svg" : ""
+        source: icon != "" ? Qt.resolvedUrl("../icons/" + icon + ".svg") : ""
         width: size
         height: size
         fillMode: Image.PreserveAspectFit
@@ -37,6 +33,5 @@ Item {
         anchors.fill: iconId
         source: iconId
         color: root.color
-        visible: isVisible
     }
 }

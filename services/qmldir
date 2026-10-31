@@ -3,7 +3,6 @@ module qs.services
 singleton Audio Audio.qml
 singleton Battery Battery.qml
 singleton Brightness Brightness.qml
-singleton Disk Disk.qml
 singleton Memory Memory.qml
 singleton Processor Processor.qml
 singleton Network Network.qml

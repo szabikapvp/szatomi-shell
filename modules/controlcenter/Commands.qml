@@ -1,6 +1,5 @@
 import QtQuick
 
-import qs.config
 import qs.services
 
 // What the launcher runs when the search starts with ">". Each one either does something right away (run),

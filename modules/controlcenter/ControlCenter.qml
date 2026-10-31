@@ -5,7 +5,6 @@ import QtQml
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell.Wayland
-import Qt5Compat.GraphicalEffects
 import "../../components/widgets"
 
 import qs.config
@@ -56,22 +55,10 @@ PanelWindow {
         : panelState.right ? panel.parent.width - panel.width - marginSize : marginSize
     property real cornerY: panelState.bottom ? panel.parent.height - panel.height - marginSize : marginSize
 
-    // Shortcuts from Settings. Touching these files does the same, for scripts
+    // Shortcuts from Settings
     Connections {
         target: Shortcuts
         function onTriggered(action) { root.runShortcut(action) }
-    }
-
-    FileView {
-        path: "/tmp/toggle_menu"
-        watchChanges: true
-        onFileChanged: root.runShortcut("controlcenter")
-    }
-
-    FileView {
-        path: "/tmp/toggle_launcher"
-        watchChanges: true
-        onFileChanged: root.runShortcut("launcher")
     }
 
     // Remembers the snap point across restarts

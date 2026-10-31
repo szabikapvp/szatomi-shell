@@ -1,17 +1,12 @@
 //@ pragma IconTheme Adwaita
 
 import Quickshell
-import Quickshell.Io
 import QtQuick
-import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
-import Quickshell.Networking
 import "./modules/bar"
 import "./modules/popup"
 import "./modules/controlcenter"
 import "./components/widgets"
 import qs.services
-import qs.config
 
 ShellRoot {
 

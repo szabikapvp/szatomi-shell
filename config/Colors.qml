@@ -22,19 +22,14 @@ QtObject {
     property color backgroundSubtle: Qt.tint(background, Qt.alpha(foreground, 0.07))
 
     property color foregroundHover: Qt.darker(foreground, hover)
-    property color foregroundActive: Qt.darker(foreground, active)
     property color primaryHover: Qt.darker(primary, hover)
     property color primaryActive: Qt.darker(primary, active)
-    property color secondaryHover: Qt.darker(secondary, hover)
-    property color secondaryActive: Qt.darker(secondary, active)
-    property color textHover: Qt.darker(text, hover)
-    property color textActive: Qt.darker(text, active)
 
     property double hover: 1.5
     property double active: 2
 
     property FileView pywalWatcher: FileView {
-        path: "/home/tomi/.cache/wal/colors.json"
+        path: Quickshell.env("HOME") + "/.cache/wal/colors.json"
         watchChanges: true
         // Loaded before the first frame, so a generated palette doesn't flash in after the custom one
         blockLoading: true
