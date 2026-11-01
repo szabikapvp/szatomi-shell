@@ -53,10 +53,12 @@ Singleton {
 
     Process {
         id: tempProc
-        command: ["sh", "-c", `sensors -j | jq -r '.. | .["Package id 0"]? | select(. != null) | .temp1_input'`]
+        // temp1 of the CPU's own sensor: the package on Intel (coretemp), Tctl on AMD (k10temp, zenpower)
+        command: ["sh", "-c", "for h in /sys/class/hwmon/hwmon*; do case $(cat $h/name) in coretemp|k10temp|zenpower|cpu_thermal) cat $h/temp1_input; exit;; esac; done"]
         stdout: SplitParser {
             onRead: data => {
-                const value = parseInt(data)
+                // Millidegrees
+                const value = Math.round(parseInt(data) / 1000)
                 if (isNaN(value)) return
                 temp = value
                 tempHistory = tempHistory.concat([value]).slice(-historyLength)

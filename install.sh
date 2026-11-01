@@ -12,15 +12,15 @@ MIN_HYPRLAND="0.56"
 
 ARCH_PKGS=(
     git curl hyprland xdg-desktop-portal-hyprland quickshell qt6-svg
-    hyprlock hyprpicker hyprshot kitty dolphin copyq kdeconnect vivaldi
+    hyprlock hyprpicker hyprshot kitty dolphin copyq kdeconnect
     pipewire wireplumber networkmanager bluez bluez-utils upower
-    brightnessctl playerctl lm_sensors jq imagemagick python-pipx
+    brightnessctl playerctl imagemagick python-pipx
 )
 FEDORA_PKGS=(
     git curl hyprland xdg-desktop-portal-hyprland quickshell qt6-qtsvg
     hyprlock hyprpicker hyprshot kitty dolphin copyq kde-connect
     pipewire wireplumber NetworkManager NetworkManager-wifi bluez upower
-    brightnessctl playerctl lm_sensors jq ImageMagick pywal
+    brightnessctl playerctl ImageMagick pywal
 )
 # From the HyprCapture README, vtk and hdf5 only work around a build failure there
 HYPRCAPTURE_PKGS=(
@@ -86,14 +86,23 @@ link() {
     ln -s "$2" "$1"
 }
 
+# Downloads a family's files from Google Fonts, unless it's already installed
+install_font() {
+    local family=$1 file
+    shift
+    fc-list | grep "$family" >/dev/null && return
+    say "Installing the $family font"
+    mkdir -p "$HOME/.local/share/fonts"
+    for file in "$@"; do
+        curl -fsSLo "$HOME/.local/share/fonts/${file##*/}" "https://github.com/google/fonts/raw/main/ofl/$file"
+    done
+    fc-cache -f >/dev/null
+}
+
 install_assets() {
-    if ! fc-list | grep 'Space Grotesk' >/dev/null; then
-        say "Installing the Space Grotesk font"
-        mkdir -p "$HOME/.local/share/fonts"
-        curl -fsSLo "$HOME/.local/share/fonts/SpaceGrotesk.ttf" \
-            'https://github.com/google/fonts/raw/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf'
-        fc-cache -f >/dev/null
-    fi
+    install_font "Space Grotesk" 'spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf'
+    install_font "Dela Gothic One" delagothicone/DelaGothicOne-Regular.ttf
+    install_font "Space Mono" spacemono/SpaceMono-{Regular,Bold,Italic,BoldItalic}.ttf
     if [[ ! -d $HOME/.local/share/icons/Bibata-Modern-Classic && ! -d /usr/share/icons/Bibata-Modern-Classic ]]; then
         say "Installing the Bibata cursor"
         mkdir -p "$HOME/.local/share/icons"
@@ -158,6 +167,7 @@ main() {
     "install_$distro"
     install_repo
     link "$CONFIG/hypr" "$SHELL_DIR/hypr"
+    link "$CONFIG/kitty" "$SHELL_DIR/kitty"
     install_assets
     enable_services
     [[ $distro == arch ]] && install_hyprcapture
