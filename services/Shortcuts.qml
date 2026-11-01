@@ -46,8 +46,8 @@ Singleton {
     Variants {
         model: Object.keys(root.actions)
 
-        // A Super tap is bound to Super's release, so Super + R doesn't also fire it. Hyprland then only sends a
-        // release, which counts too when no press came before it
+        // A Super tap is a release bind, which Hyprland skips when another key went down meanwhile, so Super + R
+        // doesn't also fire it. It only sends a release, which counts when no press came before it
         GlobalShortcut {
             required property string modelData
             property bool down: false
@@ -108,7 +108,7 @@ Singleton {
     function apply() {
         const combos = [...new Set(bound.concat(wanted.map(shortcut => shortcut.combo)))]
         const lua = combos.map(combo => `hl.unbind(${JSON.stringify(combo)})`)
-            .concat(wanted.map(shortcut => `hl.bind(${JSON.stringify(shortcut.combo)}, hl.dsp.global("quickshell:${shortcut.action}"), { description = "quickshell:${shortcut.action}" })`))
+            .concat(wanted.map(shortcut => `hl.bind(${JSON.stringify(shortcut.combo)}, hl.dsp.global("quickshell:${shortcut.action}"), { description = "quickshell:${shortcut.action}"${isTap(shortcut.combo) ? ", release = true" : ""} })`))
             // Nothing but Escape is bound while recording, so the keys reach the shell instead of running binds
             .concat([`hl.define_submap("quickshell-record", function() hl.unbind("ESCAPE") hl.bind("ESCAPE", hl.dsp.submap("reset")) end)`])
         Quickshell.execDetached(["hyprctl", "eval", lua.join("\n")])
@@ -237,11 +237,13 @@ Singleton {
         return event.nativeScanCode > 0 ? "code:" + event.nativeScanCode : ""
     }
 
+    function isTap(combo) {
+        return /^SUPER \+ SUPER_[LR]$/.test(combo)
+    }
+
     // Each part of a combo as it's shown on a key cap. A Super tap is just Super
     function keys(combo) {
-        const parts = combo.split(" + ")
-        if (parts.length == 2 && parts[0] == "SUPER" && /^SUPER_[LR]$/.test(parts[1])) parts.pop()
-        return parts.map(display)
+        return isTap(combo) ? [display("SUPER")] : combo.split(" + ").map(display)
     }
 
     function format(combo) {
