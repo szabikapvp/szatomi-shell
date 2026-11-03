@@ -76,7 +76,7 @@ PanelWindow {
                 prop: root.prop
             }
         
-            Text {
+            StyledText {
                 text: root.prop
                 color: Colors.text
                 font.family: Settings.fontFamily

@@ -101,7 +101,6 @@ install_font() {
 
 install_assets() {
     install_font "Space Grotesk" 'spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf'
-    install_font "Dela Gothic One" delagothicone/DelaGothicOne-Regular.ttf
     install_font "Space Mono" spacemono/SpaceMono-{Regular,Bold,Italic,BoldItalic}.ttf
     if [[ ! -d $HOME/.local/share/icons/Bibata-Modern-Classic && ! -d /usr/share/icons/Bibata-Modern-Classic ]]; then
         say "Installing the Bibata cursor"

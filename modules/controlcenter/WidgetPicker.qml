@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import "../../components/widgets"
+import "../../components"
 
 import qs.config
 import qs.utils
@@ -25,12 +26,6 @@ ColumnLayout {
     PageHeader {
         title: "Add widget"
         onBack: root.back()
-    }
-
-    Rectangle {
-        Layout.fillWidth: true
-        height: 1
-        color: Colors.backgroundSubtle
     }
 
     StyledScrollView {
@@ -118,7 +113,7 @@ ColumnLayout {
                             }
                         }
 
-                        Text {
+                        StyledText {
                             text: card.spot ? card.modelData.name : card.modelData.name + " (no room)"
                             color: Colors.text
                             font.pixelSize: Settings.fontSize
@@ -146,7 +141,7 @@ ColumnLayout {
         }
     }
 
-    Text {
+    StyledText {
         visible: root.available.length === 0
 
         text: "Every widget is already placed"

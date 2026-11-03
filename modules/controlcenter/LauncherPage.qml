@@ -3,6 +3,7 @@ import Quickshell
 import QtQuick.Layouts
 import QtQuick.Controls
 import "../../components/widgets"
+import "../../components"
 
 import qs.config
 import qs.services
@@ -158,7 +159,7 @@ ColumnLayout {
             onClicked: root.launch(index)
         }
 
-        Text {
+        StyledText {
             visible: list.count == 0
             anchors.fill: parent
             text: root.commandMode ? "No commands found" : "No apps found"

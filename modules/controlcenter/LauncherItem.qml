@@ -65,7 +65,7 @@ Rectangle {
             Layout.preferredWidth: Settings.launcherIconSize
         }
 
-        Text {
+        StyledText {
             text: root.text
             color: Colors.text
             font.pixelSize: Settings.launcherFontSize
@@ -75,7 +75,7 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        Text {
+        StyledText {
             visible: text != ""
             text: root.detail
             color: root.detailColor

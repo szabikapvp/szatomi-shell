@@ -1,10 +1,12 @@
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import QtQuick
 import QtQml
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell.Wayland
+import "../../components"
 import "../../components/widgets"
 
 import qs.config
@@ -30,8 +32,10 @@ PanelWindow {
 
     readonly property url launcherPage: Qt.resolvedUrl("LauncherPage.qml")
     readonly property bool launcherOpen: pageLoader.source.toString() === launcherPage.toString()
-    // Kept until the panel hides, since Hyprland drops the focus when a layer stops being exclusive
+    // Kept until the panel hides or something outside it is clicked
     property bool keyboardGrabbed: false
+    // Stays clickable while the panel holds the keyboard
+    property var bar
     onLauncherOpenChanged: if (launcherOpen) keyboardGrabbed = true
     // Opened straight to a page, so going back closes instead of showing a grid nobody asked for
     property bool directPage: false
@@ -91,8 +95,15 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     exclusionMode: Fullscreen.exclusionMode(screen)
 
-    // The launcher can open from a shortcut, so it takes the keyboard right away like wofi
-    WlrLayershell.keyboardFocus: keyboardGrabbed ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand
+    // The launcher can open from a shortcut, so it takes the keyboard right away like wofi.
+    // A grab instead of exclusive focus, since Hyprland sends no clicks to other layers while one is exclusive
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+
+    HyprlandFocusGrab {
+        windows: [root, root.bar]
+        active: root.keyboardGrabbed && root.showing
+        onCleared: root.keyboardGrabbed = false
+    }
 
     color: "transparent"
     aboveWindows: true
@@ -142,7 +153,7 @@ PanelWindow {
         panel.y = panel.y
     }
 
-    PopMask {
+    Panel {
         id: panel
 
         x: cornerX
@@ -156,14 +167,10 @@ PanelWindow {
         // Matches the panel's own corners, or they'd change shape when the mask lets go
         radius: Settings.radiusLg + panelPadding
 
-        Rectangle {
-            id: osdRect
+        onBack: root.back()
 
+        Item {
             anchors.fill: parent
-
-            BackGesture {
-                onTriggered: back()
-            }
 
             // Only reachable on empty parts, the content on top takes its own clicks
             MouseArea {
@@ -238,117 +245,98 @@ PanelWindow {
                 }
             }
 
-            // The corner facing the screen corner stays small, the one the panel grows from
-            radius: Settings.radiusLg
-            topLeftRadius: panel.isOrigin(false, false) ? Settings.radiusSm : panel.radius
-            topRightRadius: panel.isOrigin(true, false) ? Settings.radiusSm : panel.radius
-            bottomLeftRadius: panel.isOrigin(false, true) ? Settings.radiusSm : panel.radius
-            bottomRightRadius: panel.isOrigin(true, true) ? Settings.radiusSm : panel.radius
+            // Arrows no control used move through the controls like Tab and Shift+Tab
+            Keys.onPressed: (event) => {
+                const forward = event.key == Qt.Key_Down || event.key == Qt.Key_Right
+                if (!forward && event.key != Qt.Key_Up && event.key != Qt.Key_Left) return
+                Window.activeFocusItem?.nextItemInFocusChain(forward)?.forceActiveFocus()
+                event.accepted = true
+            }
 
-            color: Colors.background
-            border.width: 1
-            border.color: Colors.backgroundSubtle
+            ColumnLayout {
+                id: mainPage
 
-            // Pages stay at the panel's corner while a resize animates
-            Item {
-                x: panel.contentX
-                y: panel.contentY
-                width: panel.width
-                height: panel.height
+                visible: root.visiblePage == this
 
-                // Arrows no control used move through the controls like Tab and Shift+Tab
+                x: panelPadding
+                y: panelPadding
+                width: parent.width - panelPadding * 2
+
+                spacing: Settings.spacing * 2
+
+                // Typing on the grid opens the launcher with the typed key, control characters don't count.
+                // Tab or an arrow before any tile has the keyboard goes to the first one
                 Keys.onPressed: (event) => {
-                    const forward = event.key == Qt.Key_Down || event.key == Qt.Key_Right
-                    if (!forward && event.key != Qt.Key_Up && event.key != Qt.Key_Left) return
-                    Window.activeFocusItem?.nextItemInFocusChain(forward)?.forceActiveFocus()
+                    const navigation = [Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down].includes(event.key)
+                    if (navigation && !grid.editing) {
+                        grid.focusFirst()
+                        event.accepted = true
+                        return
+                    }
+
+                    const code = event.text.charCodeAt(0)
+                    if (grid.editing || !(code > 32 && code != 127)) return
+                    if (event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)) return
+                    openPage(launcherPage, { query: event.text })
                     event.accepted = true
                 }
 
-                ColumnLayout {
-                    id: mainPage
+                PageHeader {
+                    visible: grid.editing
+                    title: "Edit layout"
+                    showBack: false
 
-                    visible: root.visiblePage == this
+                    Button {
+                        icon: "add"
+                        iconOnly: true
+                        size: "md"
+                        type: "ghost"
+                        textColor: Colors.text
+                        Layout.fillWidth: false
 
-                    x: panelPadding
-                    y: panelPadding
-                    width: parent.width - panelPadding * 2
-
-                    spacing: Settings.spacing * 2
-
-                    // Typing on the grid opens the launcher with the typed key, control characters don't count.
-                    // Tab or an arrow before any tile has the keyboard goes to the first one
-                    Keys.onPressed: (event) => {
-                        const navigation = [Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down].includes(event.key)
-                        if (navigation && !grid.editing) {
-                            grid.focusFirst()
-                            event.accepted = true
-                            return
-                        }
-
-                        const code = event.text.charCodeAt(0)
-                        if (grid.editing || !(code > 32 && code != 127)) return
-                        if (event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)) return
-                        openPage(launcherPage, { query: event.text })
-                        event.accepted = true
+                        onClicked: openPage(Qt.resolvedUrl("WidgetPicker.qml"), { grid: grid })
                     }
 
-                    PageHeader {
-                        visible: grid.editing
-                        title: "Edit layout"
-                        showBack: false
+                    Button {
+                        icon: "check"
+                        iconOnly: true
+                        size: "md"
+                        type: "ghost"
+                        textColor: Colors.text
+                        Layout.fillWidth: false
 
-                        Button {
-                            icon: "add"
-                            iconOnly: true
-                            size: "md"
-                            type: "ghost"
-                            textColor: Colors.text
-                            Layout.fillWidth: false
-
-                            onClicked: openPage(Qt.resolvedUrl("WidgetPicker.qml"), { grid: grid })
-                        }
-
-                        Button {
-                            icon: "check"
-                            iconOnly: true
-                            size: "md"
-                            type: "ghost"
-                            textColor: Colors.text
-                            Layout.fillWidth: false
-
-                            onClicked: grid.editing = false
-                        }
-                    }
-
-                    WidgetGrid {
-                        id: grid
-                        store: panelState
-
-                        onPageRequested: (page, properties) => openPage(page, properties)
+                        onClicked: grid.editing = false
                     }
                 }
 
-                // Pages size themselves to this width, the panel follows their height
-                Loader {
-                    id: pageLoader
+                WidgetGrid {
+                    id: grid
+                    store: panelState
 
-                    x: panelPadding
-                    y: panelPadding
-                    width: parent.width - panelPadding * 2
-
-                    // A page isn't in the window yet while it's being created, so focusing from there doesn't stick.
-                    // It names what should take the keyboard instead, or takes it itself so Tab starts on it
-                    onLoaded: (item.initialFocus ?? item).forceActiveFocus()
+                    onPageRequested: (page, properties) => openPage(page, properties)
                 }
+            }
 
-                Connections {
-                    target: pageLoader.item
-                    ignoreUnknownSignals: true
+            // Pages size themselves to this width, the panel follows their height
+            Loader {
+                id: pageLoader
 
-                    function onBack() { root.back() }
-                    function onCloseRequested() { root.close() }
-                    function onPageRequested(page, properties) { root.openPage(page, properties) }
-                }
+                x: panelPadding
+                y: panelPadding
+                width: parent.width - panelPadding * 2
+
+                // A page isn't in the window yet while it's being created, so focusing from there doesn't stick.
+                // It names what should take the keyboard instead, or takes it itself so Tab starts on it
+                onLoaded: (item.initialFocus ?? item).forceActiveFocus()
+            }
+
+            Connections {
+                target: pageLoader.item
+                ignoreUnknownSignals: true
+
+                function onBack() { root.back() }
+                function onCloseRequested() { root.close() }
+                function onPageRequested(page, properties) { root.openPage(page, properties) }
             }
         }
     }

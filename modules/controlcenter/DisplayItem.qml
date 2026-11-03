@@ -61,7 +61,7 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 0
 
-            Text {
+            StyledText {
                 text: root.config.label
                 color: Colors.text
                 font.pixelSize: Settings.fontSize
@@ -70,7 +70,7 @@ Rectangle {
                 Layout.fillWidth: true
             }
 
-            Text {
+            StyledText {
                 text: root.config.name + (Displays.mainScreen?.name == root.config.name ? " · Main" : "") + " · " + (root.config.disabled ? "Off"
                     : root.config.mirror != "" ? "Mirroring"
                     : root.config.width + " × " + root.config.height + " · " + Math.round(root.config.refresh) + " Hz · " + Math.round(root.config.scale * 100) + "%")

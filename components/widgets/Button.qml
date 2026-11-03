@@ -21,6 +21,11 @@ Item {
     property bool bold: true
     property bool iconOnly: false
     property bool rightSide: false
+    // Content in the middle, for buttons stretched wider than it
+    property bool centered: false
+    // Sides joined to a neighbour in a group get small corners
+    property bool joinedLeft: false
+    property bool joinedRight: false
 
     property int fontSize: Settings.buttonFontSize[size]
     property int spacing: Settings.buttonPadding[size]
@@ -91,7 +96,10 @@ Item {
                     } else return "transparent"
             }
         }
-        radius: root.radius
+        topLeftRadius: root.joinedLeft ? Settings.buttonJoinedRadius : root.radius
+        bottomLeftRadius: topLeftRadius
+        topRightRadius: root.joinedRight ? Settings.buttonJoinedRadius : root.radius
+        bottomRightRadius: topRightRadius
 
         Behavior on color {
             ColorAnim {}
@@ -100,7 +108,7 @@ Item {
         RowLayout {
             id: content
 
-            x: root.paddingLeft
+            x: root.centered ? (root.width - implicitWidth) / 2 : root.paddingLeft
             anchors.verticalCenter: parent.verticalCenter
             // width: parent.width - (root.spacing * 2) - (root.rightSide ? Settings.buttonIconSize + root.spacing : 0)
 
@@ -113,7 +121,7 @@ Item {
                 color: disabled ? Qt.darker(textColor, 1.8) : textColor
             }
 
-            Text {
+            StyledText {
                 visible: !iconOnly
                 text: root.text
                 color: disabled ? Qt.darker(textColor, 1.8) : textColor

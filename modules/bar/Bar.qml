@@ -17,10 +17,15 @@ PanelWindow {
 
     // Icons open its pages
     property var controlCenter
+    // Or a small menu under them
+    property var menu
 
     readonly property url wifiPage: Qt.resolvedUrl("../controlcenter/WifiPage.qml")
-    readonly property url powerPage: Qt.resolvedUrl("../controlcenter/PowerPage.qml")
-    readonly property url settingsPage: Qt.resolvedUrl("../controlcenter/SettingsPage.qml")
+    readonly property url statsMenu: Qt.resolvedUrl("../barmenu/StatsMenu.qml")
+    readonly property url batteryMenu: Qt.resolvedUrl("../barmenu/BatteryMenu.qml")
+    readonly property url volumeMenu: Qt.resolvedUrl("../barmenu/VolumeMenu.qml")
+    readonly property url volumeOptions: Qt.resolvedUrl("../barmenu/VolumeOptions.qml")
+    readonly property url clockMenu: Qt.resolvedUrl("../barmenu/ClockMenu.qml")
 
     anchors {
         top: Settings.barPosition == "top"
@@ -64,7 +69,12 @@ PanelWindow {
                 spacing: Settings.spacing
                 
                 BarButton {
+                    id: statsButton
+                    active: bar.menu?.currentPage === bar.statsMenu.toString()
                     tooltip: "CPU load " + Processor.usage + "%"
+
+                    onClicked: bar.menu?.toggle(bar.statsMenu, statsButton)
+
                     CpuTemp {}
                 }
                 //CpuUsage {}
@@ -75,7 +85,7 @@ PanelWindow {
             RowLayout {
                 id: workspaceRow
                 anchors.centerIn: parent
-
+                
                 Repeater {
                     model: Settings.workspaceCount // Number of workspaces
 
@@ -139,31 +149,36 @@ PanelWindow {
                 BarButton {
                     id: batteryButton
                     visible: Battery.available
-                    active: bar.controlCenter?.currentPage === bar.powerPage.toString()
+                    active: bar.menu?.currentPage === bar.batteryMenu.toString()
                     tooltip: Battery.level + "%" + (Battery.status ? " · " + Battery.status : "")
 
-                    onClicked: bar.controlCenter?.togglePage(bar.powerPage)
+                    onClicked: bar.menu?.toggle(bar.batteryMenu, batteryButton)
 
                     // The low warning is the accent color too, so it would vanish on the accent fill
                     BatteryIcon { warn: Battery.low && !batteryButton.active }
                 }
 
-                // Click opens the audio settings, right click mutes, scrolling changes the volume
+                // Click opens the volume slider, right click its options, scrolling changes the volume
                 BarButton {
-                    active: bar.controlCenter?.currentPage === bar.settingsPage.toString() && bar.controlCenter.visiblePage.category === "Audio"
+                    id: volumeButton
+                    active: [bar.volumeMenu, bar.volumeOptions].some(page => bar.menu?.currentPage === page.toString())
                     tooltip: Audio.isMuted ? "Muted" : "Volume " + Audio.level + "%"
 
-                    onClicked: (mouse) => {
-                        if (mouse.button == Qt.LeftButton) bar.controlCenter?.togglePage(bar.settingsPage, { category: "Audio" })
-                        else Audio.toggleMute()
-                    }
+                    onClicked: (mouse) => bar.menu?.toggle(mouse.button == Qt.RightButton ? bar.volumeOptions : bar.volumeMenu, volumeButton)
                     onScrolled: (notches) => Audio.adjust(notches * Settings.sliderScrollStep)
 
                     VolumeIcon {}
                 }
 
-                DateText {}
-                TimeText {}
+                BarButton {
+                    id: clockButton
+                    active: bar.menu?.currentPage === bar.clockMenu.toString()
+
+                    onClicked: bar.menu?.toggle(bar.clockMenu, clockButton)
+
+                    DateText {}
+                    TimeText {}
+                }
             }
         }
     }

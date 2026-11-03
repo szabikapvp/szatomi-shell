@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import "../../components/widgets"
+import "../../components"
 
 import qs.config
 import qs.services
@@ -55,7 +56,7 @@ ColumnLayout {
             width: scrollView.availableWidth
             spacing: Settings.spacing
 
-            Text {
+            StyledText {
                 visible: !root.config
 
                 text: "This display is no longer connected"
@@ -86,7 +87,7 @@ ColumnLayout {
                         Layout.fillWidth: true
                         spacing: Settings.px(2)
 
-                        Text {
+                        StyledText {
                             text: "Use this display"
                             color: Colors.text
                             font.pixelSize: Settings.fontSize
@@ -95,7 +96,7 @@ ColumnLayout {
                             Layout.fillWidth: true
                         }
 
-                        Text {
+                        StyledText {
                             text: !Displays.isLastOn(root.key) ? (root.copying ? "Mirroring " + (Displays.shown.find(other => other.key == root.config.mirror)?.label ?? "") : "Turn it off to use the others only")
                                 : Displays.mirroring ? "The others mirror it, so it stays on"
                                 : "It's the only display in use, so it stays on"
@@ -206,7 +207,7 @@ ColumnLayout {
                         spacing: Settings.spacing
                         Layout.fillWidth: true
 
-                        Text {
+                        StyledText {
                             text: modelData[0]
                             color: Qt.alpha(Colors.text, 0.6)
                             font.pixelSize: Settings.fontSize - Settings.px(2)
@@ -214,7 +215,7 @@ ColumnLayout {
                             Layout.preferredWidth: list.width / 5
                         }
 
-                        Text {
+                        StyledText {
                             text: modelData[1]
                             color: Colors.text
                             font.pixelSize: Settings.fontSize - Settings.px(2)

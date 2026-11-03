@@ -64,7 +64,7 @@ Tile {
     }
 
     // Only on the long side, where there's room for it
-    Text {
+    StyledText {
         visible: root.vertical ? root.rows > 1 : root.columns > 1
 
         x: root.vertical ? (root.width - width) / 2 : root.width - root.inset - width

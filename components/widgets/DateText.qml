@@ -1,13 +1,15 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
+import "../../components"
 
 import qs.config
 
-Text {
+StyledText {
     id:root
 
-    Layout.preferredWidth: Settings.px(84)
+    Layout.preferredWidth: Settings.barDateWidth
+    tabular: false
     horizontalAlignment: Text.AlignRight
 
     text: Qt.formatDateTime(new Date(), Settings.dateFormat)

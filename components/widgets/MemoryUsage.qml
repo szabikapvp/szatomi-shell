@@ -22,7 +22,7 @@ RowLayout {
         }
     }
 
-    Text {                        
+    StyledText {                        
         id: memText
         text: Memory.getUsage() ? Memory.getUsage() + "%" : "--"
         color: Colors.text

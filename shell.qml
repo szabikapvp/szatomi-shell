@@ -5,6 +5,7 @@ import QtQuick
 import "./modules/bar"
 import "./modules/popup"
 import "./modules/controlcenter"
+import "./modules/barmenu"
 import "./components/widgets"
 import qs.services
 
@@ -52,16 +53,26 @@ ShellRoot {
         screen: Displays.mainScreen
         icon: VolumeIcon {}
         prop: Audio.getLevel()
-        suppressed: controlCenterWindow.showing
+        suppressed: controlCenterWindow.showing || barMenu.currentPage === mainBar.volumeMenu.toString()
     }
 
     ControlCenter {
         id: controlCenterWindow
         screen: Displays.mainScreen
+        bar: mainBar
     }
 
     Bar {
+        id: mainBar
         modelData: Displays.mainScreen
+        controlCenter: controlCenterWindow
+        menu: barMenu
+    }
+
+    BarMenu {
+        id: barMenu
+        screen: Displays.mainScreen
+        bar: mainBar
         controlCenter: controlCenterWindow
     }
 

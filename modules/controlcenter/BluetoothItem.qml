@@ -115,7 +115,7 @@ Item {
                     Layout.fillWidth: true
                     spacing: 0
 
-                    Text {
+                    StyledText {
                         text: device.name
                         color: disabled ? Qt.darker(textColor, 1.8) : textColor
                         font.pixelSize: Settings.fontSize
@@ -127,7 +127,7 @@ Item {
                         wrapMode: Text.NoWrap
                     }
 
-                    Text {
+                    StyledText {
                         text: {
                             if (device.pairing) return "Pairing..."
                             if (Bluetooth.isConnecting(device)) return "Connecting..."

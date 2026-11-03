@@ -41,6 +41,7 @@ hl.monitor({
 hl.on("hyprland.start", function()
     -- hyprpm plugins (hyprcapture) aren't loaded on login unless reloaded here
     hl.exec_cmd("hyprpm reload -n")
+    hl.exec_cmd("hyprctl setcursor Bibata-Modern-Classic 24")
     -- `;` not `&&`: on a fresh install wal has no palette to restore yet, and the shell must start anyway
     hl.exec_cmd("sh -c 'wal -R; sleep 0.2; qs -p ~/.config/quickshell'")
     hl.exec_cmd("kitty", { workspace = "1 silent" })
@@ -54,6 +55,8 @@ end)
 --############################
 
 -- See https://wiki.hyprland.org/Configuring/Environment-variables/
+
+hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
 
 hl.env("XCURSOR_SIZE", 24)
 

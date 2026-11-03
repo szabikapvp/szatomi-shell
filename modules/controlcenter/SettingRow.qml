@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
 import "../../components/widgets"
+import "../../components"
 
 import qs.config
 import qs.services
@@ -52,7 +53,7 @@ Rectangle {
                 Layout.fillWidth: true
                 spacing: Settings.px(2)
 
-                Text {
+                StyledText {
                     visible: root.showCategory
                     text: root.entry.category
                     color: Colors.primary
@@ -61,7 +62,7 @@ Rectangle {
                     font.bold: true
                 }
 
-                Text {
+                StyledText {
                     text: root.entry.label
                     color: Colors.text
                     font.pixelSize: Settings.fontSize
@@ -71,7 +72,7 @@ Rectangle {
                     Layout.fillWidth: true
                 }
 
-                Text {
+                StyledText {
                     visible: text != ""
                     text: root.overridden ? "Generated from the wallpaper" : root.entry.description ?? ""
                     color: Qt.alpha(Colors.text, 0.6)
@@ -94,7 +95,7 @@ Rectangle {
                 onClicked: Settings.reset(root.entry.key)
             }
 
-            Text {
+            StyledText {
                 visible: root.entry.type == "int"
                 text: Math.round(below.item?.shownValue ?? root.current) + (root.entry.unit ? " " + root.entry.unit : "")
                 color: Colors.text
@@ -190,7 +191,7 @@ Rectangle {
                 Layout.fillWidth: true
                 spacing: Settings.spacing
 
-                Text {
+                StyledText {
                     text: Wallpaper.selected ? Wallpaper.selected.split("/").pop() : "No wallpaper"
                     color: Qt.alpha(Colors.text, 0.6)
                     font.pixelSize: Settings.fontSize - Settings.px(2)
@@ -260,7 +261,7 @@ Rectangle {
                         border.color: Qt.alpha(Colors.foreground, 0.2)
                         opacity: recorder.blocked ? 0.5 : 1
 
-                        Text {
+                        StyledText {
                             id: capText
                             anchors.centerIn: parent
                             text: parent.modelData
@@ -272,7 +273,7 @@ Rectangle {
                     }
                 }
 
-                Text {
+                StyledText {
                     visible: recorder.recording
                     text: "Press the new shortcut · Esc to cancel"
                     color: Colors.primary
@@ -305,7 +306,7 @@ Rectangle {
                 }
             }
 
-            Text {
+            StyledText {
                 visible: text != ""
                 text: recorder.problem != "" ? recorder.problem
                     : recorder.blocked ? "Your Hyprland config already uses " + Shortcuts.format(root.current) + ", so this one is off until it's changed"
@@ -348,7 +349,7 @@ Rectangle {
                 }
             }
 
-            Text {
+            StyledText {
                 visible: Audio.apps.length === 0
                 text: "No apps are using sound"
                 color: Qt.alpha(Colors.text, 0.6)
@@ -385,7 +386,7 @@ Rectangle {
                 }
             }
 
-            Text {
+            StyledText {
                 visible: deviceList.nodes.length === 0
                 text: "No devices found"
                 color: Qt.alpha(Colors.text, 0.6)
@@ -409,7 +410,7 @@ Rectangle {
                 onPicked: (value) => Displays.setMirrorSource(value ? Displays.defaultSource() : "")
             }
 
-            Text {
+            StyledText {
                 visible: Displays.mirroring
                 text: "Picture from"
                 color: Qt.alpha(Colors.text, 0.6)
@@ -465,7 +466,7 @@ Rectangle {
                 }
             }
 
-            Text {
+            StyledText {
                 visible: Displays.shown.length === 0
                 text: "No displays found"
                 color: Qt.alpha(Colors.text, 0.6)
@@ -480,7 +481,7 @@ Rectangle {
                 Layout.topMargin: Settings.spacing
                 spacing: Settings.spacing
 
-                Text {
+                StyledText {
                     text: "Changes are saved for this set of displays"
                     color: Qt.alpha(Colors.text, 0.6)
                     font.pixelSize: Settings.fontSize - Settings.px(2)
@@ -551,7 +552,7 @@ Rectangle {
                 }
             }
 
-            Text {
+            StyledText {
                 visible: root.entry.type == "format"
                 text: "Preview: " + Qt.formatDateTime(new Date(), field.text)
                 color: Qt.alpha(Colors.text, 0.6)

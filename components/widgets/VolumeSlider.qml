@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import "../../components"
 
 import qs.config
 import qs.services
@@ -44,21 +45,23 @@ RowLayout {
         onMoved: (value) => root.set(value / 100)
     }
 
-    Text {
+    StyledText {
+        id: percent
+
         text: Math.round(slider.shownValue) + "%"
         color: Colors.text
         font.pixelSize: Settings.fontSize - Settings.px(2)
         font.family: Settings.fontFamily
         font.bold: true
         horizontalAlignment: Text.AlignRight
-        Layout.preferredWidth: percentMetrics.advanceWidth("100%")
+        // Room for the widest value, so the slider doesn't shift as it changes
+        Layout.preferredWidth: widest.advanceWidth
     }
 
-    FontMetrics {
-        id: percentMetrics
-        font.family: Settings.fontFamily
-        font.pixelSize: Settings.fontSize - Settings.px(2)
-        font.bold: true
+    TextMetrics {
+        id: widest
+        font: percent.font
+        text: "100%"
     }
 
     Timer {

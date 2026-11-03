@@ -1,10 +1,11 @@
 import QtQuick
 import QtQuick.Layouts
+import "../../components"
 
 import qs.config
 
 // Small heading over a group of settings on a page
-Text {
+StyledText {
     Layout.fillWidth: true
     Layout.topMargin: Settings.spacing
     Layout.leftMargin: Settings.spacing * 1.5

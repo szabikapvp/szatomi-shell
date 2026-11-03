@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import "../../../components"
 
 import qs.config
 
@@ -36,7 +37,7 @@ Tile {
             Layout.preferredWidth: 1
             spacing: 0
 
-            Text {
+            StyledText {
                 text: Qt.formatDateTime(root.today, "dddd")
                 color: Colors.primary
                 font.family: Settings.fontFamily
@@ -46,17 +47,17 @@ Tile {
                 Layout.fillWidth: true
             }
 
-            Text {
+            StyledText {
                 text: root.today.getDate()
                 color: Colors.text
-                font.family: Settings.headerFont
                 font.pixelSize: Settings.fontSize * 4
+                font.bold: true
                 Layout.fillWidth: true
                 Layout.fillHeight: !root.tall
                 verticalAlignment: Text.AlignVCenter
             }
 
-            Text {
+            StyledText {
                 text: Qt.formatDateTime(root.today, "MMMM yyyy")
                 color: Qt.alpha(Colors.text, 0.6)
                 font.family: Settings.fontFamily
@@ -80,7 +81,7 @@ Tile {
             Repeater {
                 model: 7
 
-                Text {
+                StyledText {
                     required property int index
 
                     // Named through formatDateTime like every other date, so the language matches. Jan 7 2024 was a Sunday
@@ -122,7 +123,7 @@ Tile {
                     }
 
                     // Centered on the digits themselves, the line box leaves room for descenders and sits them high
-                    Text {
+                    StyledText {
                         id: dayText
 
                         x: Math.round((parent.width - glyphs.tightBoundingRect.width) / 2 - glyphs.tightBoundingRect.x)

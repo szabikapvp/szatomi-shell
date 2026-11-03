@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import "../"
+import "../../components"
 
 import qs.services
 import qs.config
@@ -22,7 +23,7 @@ RowLayout {
         }
     }
 
-    Text {                        
+    StyledText {                        
         id: cpuText
         text: Processor.getUsage() ? Processor.getUsage() + "%" : "--"
         color: Colors.text

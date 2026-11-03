@@ -3,6 +3,7 @@ import Quickshell
 import QtQuick.Layouts
 import QtQuick.Controls
 import "../../components/widgets"
+import "../../components"
 
 import qs.config
 import qs.services
@@ -47,12 +48,6 @@ ColumnLayout {
         }
     }
 
-    Rectangle {
-        width: parent.width
-        height: 1
-        color: Colors.backgroundSubtle
-    }
-
     StyledScrollView {
         id: scrollView
 
@@ -84,7 +79,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 spacing: Settings.spacing
 
-                Text {
+                StyledText {
                     text: {
                         if (!Bluetooth.available) return "No Bluetooth adapter found"
                         if (Bluetooth.blocked) return "Bluetooth is blocked"

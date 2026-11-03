@@ -76,7 +76,7 @@ Item {
         Behavior on y { Anim { fast: true } }
     }
 
-    Text {
+    StyledText {
         anchors.centerIn: parent
         visible: root.widgets.length === 0 && !root.editing
 

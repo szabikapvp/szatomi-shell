@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import "../../components/widgets"
+import "../../components"
 
 import qs.config
 
@@ -34,7 +35,7 @@ RowLayout {
         Layout.fillWidth: true
         spacing: 0
 
-        Text {
+        StyledText {
             visible: root.path != ""
             text: root.path
             color: Qt.alpha(Colors.text, 0.6)
@@ -45,7 +46,7 @@ RowLayout {
             Layout.fillWidth: true
         }
 
-        Text {
+        StyledText {
             text: root.title
             color: Colors.text
             font.pixelSize: Settings.px(24)

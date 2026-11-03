@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import "../"
+import "../../components"
 
 import qs.services
 import qs.config
@@ -12,7 +13,7 @@ RowLayout {
     property int textWidth: Settings.px(64)
     property color color: Colors.text
 
-    Text {                        
+    StyledText {                        
         id: cpuText
         text: Processor.getTemp() ? Processor.getTemp() + " °C" : "--"
         color: Processor.hot ? Colors.primary : root.color

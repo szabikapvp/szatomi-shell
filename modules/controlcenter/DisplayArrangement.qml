@@ -7,6 +7,7 @@ import qs.config
 import qs.services
 import qs.utils
 import "../../services/DisplayLayout.js" as Arrange
+import "../../components"
 
 // The displays in use, drawn where they sit. Dragging one snaps it next to another, arrow keys step it from
 // spot to spot, and a click or Enter opens its page. Each screen shows its name while this is open
@@ -102,7 +103,7 @@ Item {
                 width: parent.width - Settings.spacing
                 spacing: 0
 
-                Text {
+                StyledText {
                     text: tile.config?.label ?? ""
                     color: Colors.text
                     font.pixelSize: Settings.fontSize - Settings.px(2)
@@ -113,7 +114,7 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                Text {
+                StyledText {
                     text: (tile.config?.name ?? "") + (Displays.mainScreen?.name == tile.config?.name ? " · Main" : "")
                     color: Qt.alpha(Colors.text, 0.6)
                     font.pixelSize: Settings.fontSize - Settings.px(4)

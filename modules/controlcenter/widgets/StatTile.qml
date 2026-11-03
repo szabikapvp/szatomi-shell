@@ -40,7 +40,7 @@ Tile {
                 color: Qt.alpha(Colors.text, 0.6)
             }
 
-            Text {
+            StyledText {
                 text: root.label
                 color: Qt.alpha(Colors.text, 0.6)
                 font.pixelSize: Settings.fontSize - Settings.px(2)
@@ -49,7 +49,7 @@ Tile {
                 Layout.fillWidth: true
             }
 
-            Text {
+            StyledText {
                 text: root.detail
                 color: Qt.alpha(Colors.text, 0.6)
                 font.pixelSize: Settings.fontSize - Settings.px(2)
@@ -57,11 +57,11 @@ Tile {
             }
         }
 
-        Text {
+        StyledText {
             text: root.value
             color: root.alert ? Colors.primary : Colors.text
-            font.family: Settings.headerFont
             font.pixelSize: Settings.fontSize * 3
+            font.bold: true
         }
 
         Canvas {

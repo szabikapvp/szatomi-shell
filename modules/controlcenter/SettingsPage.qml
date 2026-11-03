@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import "../../components/widgets"
+import "../../components"
 
 import qs.config
 import qs.services
@@ -128,7 +129,7 @@ ColumnLayout {
                     }
                 }
 
-                Text {
+                StyledText {
                     visible: root.results.length === 0
 
                     text: "No settings match"

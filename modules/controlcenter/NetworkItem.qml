@@ -146,7 +146,7 @@ Item {
                     Layout.fillWidth: true
                     spacing: 0
 
-                    Text {
+                    StyledText {
                         text: conn.ssid
                         color: disabled ? Qt.darker(textColor, 1.8) : textColor
                         font.pixelSize: Settings.fontSize
@@ -158,7 +158,7 @@ Item {
                         wrapMode: Text.NoWrap
                     }
 
-                    Text {
+                    StyledText {
                         text: {
                             if (connecting) return "Connecting..."
                             if (conn.active) return Network.wifiStatus === "limited" ? "Connected, no internet" : "Connected"

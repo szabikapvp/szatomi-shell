@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import "../../../components"
 
 import qs.config
 
@@ -20,7 +21,7 @@ Tile {
         anchors.margins: Settings.spacing * 2
         spacing: Settings.spacing
 
-        Text {
+        StyledText {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
@@ -29,8 +30,8 @@ Tile {
                 return root.tall ? time.replace(":", "\n") : time
             }
             color: Colors.text
-            font.family: Settings.headerFont
             font.pixelSize: root.height
+            font.bold: true
             fontSizeMode: Text.Fit
             minimumPixelSize: Settings.fontSize
             lineHeight: 0.9
@@ -38,7 +39,7 @@ Tile {
             verticalAlignment: Text.AlignVCenter
         }
 
-        Text {
+        StyledText {
             Layout.fillWidth: true
 
             text: Qt.formatDateTime(clock.date, Settings.longDateFormat)

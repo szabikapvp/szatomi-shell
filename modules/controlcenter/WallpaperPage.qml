@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Qt.labs.folderlistmodel
 import Quickshell.Widgets
 import "../../components/widgets"
+import "../../components"
 
 import qs.config
 import qs.services
@@ -29,7 +30,7 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: Settings.spacing
 
-        Text {
+        StyledText {
             text: "Set for"
             color: Colors.text
             font.pixelSize: Settings.fontSize
@@ -175,7 +176,7 @@ ColumnLayout {
             }
         }
 
-        Text {
+        StyledText {
             anchors.centerIn: parent
             visible: list.count == 0
 

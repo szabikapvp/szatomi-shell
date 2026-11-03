@@ -40,7 +40,6 @@ var entries = [
     { key: "uiScale", category: "Appearance", group: "Size", label: "Scale", description: "Size of everything in the shell", type: "choice", options: ["75%", "100%", "125%", "150%"] },
     { key: "fontSize", category: "Appearance", group: "Size", label: "Font size", description: "Buttons and the control center grid grow with it", type: "int", min: 12, max: 20, step: 1, unit: "px" },
     { key: "fontFamily", category: "Appearance", group: "Fonts", label: "Font", description: "Used for all regular text", type: "font" },
-    { key: "headerFont", category: "Appearance", group: "Fonts", label: "Display font", description: "Used for large numbers like the clock", type: "font" },
     { key: "roundness", category: "Appearance", group: "Shape", label: "Roundness", description: "Corners of panels, buttons and cards", type: "int", min: 0, max: 125, step: 5, unit: "%" },
     { key: "windowSpacing", category: "Appearance", group: "Shape", label: "Window spacing", description: "Gap between floating panels and the screen edges", type: "int", min: 0, max: 16, step: 1, unit: "px" },
 

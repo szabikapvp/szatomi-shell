@@ -56,7 +56,12 @@ Item {
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         cursorShape: Qt.PointingHandCursor
 
-        onClicked: (mouse) => root.clicked(mouse)
+        // Clicking puts the tooltip away until the pointer comes back, or it pops up as soon as a menu closes
+        onClicked: (mouse) => {
+            root.tooltipReady = false
+            hoverDelay.stop()
+            root.clicked(mouse)
+        }
 
         // Fractions of a notch pass straight through, so touchpads scroll smoothly instead of in jumps.
         // Touchpads (the ones reporting pixels) follow the natural scrolling setting, so up is always up
@@ -82,7 +87,8 @@ Item {
     Tooltip {
         target: root
         text: root.tooltip
-        shown: area.containsMouse && !area.pressed && root.tooltipReady
+        // Out of the way of what it opened, which drops into the same spot
+        shown: area.containsMouse && !area.pressed && root.tooltipReady && !root.active
         above: Settings.barPosition == "bottom"
         // Clears the bar's padding as well as the usual gap
         offset: Settings.spacing + Settings.windowSpacing

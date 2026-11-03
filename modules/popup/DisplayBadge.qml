@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Wayland
+import "../../components"
 
 import qs.config
 import qs.services
@@ -57,7 +58,7 @@ PanelWindow {
             anchors.centerIn: parent
             spacing: 0
 
-            Text {
+            StyledText {
                 text: root.config?.label ?? ""
                 color: Colors.text
                 font.pixelSize: Settings.fontSize * 1.5
@@ -65,7 +66,7 @@ PanelWindow {
                 font.bold: true
             }
 
-            Text {
+            StyledText {
                 // Mirrors show this picture too, so they're named here
                 text: [root.config?.name ?? ""]
                     .concat(Displays.mainScreen?.name == root.modelData?.name ? ["Main"] : [])

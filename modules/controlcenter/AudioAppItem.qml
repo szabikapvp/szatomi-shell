@@ -42,7 +42,7 @@ ColumnLayout {
             Layout.fillWidth: true
             spacing: 0
 
-            Text {
+            StyledText {
                 text: Audio.appName(root.app)
                 color: Colors.text
                 font.pixelSize: Settings.fontSize
@@ -52,7 +52,7 @@ ColumnLayout {
                 Layout.fillWidth: true
             }
 
-            Text {
+            StyledText {
                 text: root.playing ? Audio.appMedia(root.app) || "Playing" : "Not playing"
                 color: Qt.alpha(Colors.text, 0.6)
                 font.pixelSize: Settings.fontSize - Settings.px(4)

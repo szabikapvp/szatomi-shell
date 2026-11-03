@@ -62,7 +62,7 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 0
 
-            Text {
+            StyledText {
                 text: Audio.nodeName(root.node)
                 color: Colors.text
                 font.pixelSize: Settings.fontSize
@@ -72,7 +72,7 @@ Rectangle {
                 Layout.fillWidth: true
             }
 
-            Text {
+            StyledText {
                 text: (root.isDefault ? "Default · " : "") + (root.node.audio.muted ? "Muted" : Math.round(root.node.audio.volume * 100) + "%")
                 color: Qt.alpha(Colors.text, 0.6)
                 font.pixelSize: Settings.fontSize - Settings.px(4)

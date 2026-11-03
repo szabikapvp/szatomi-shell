@@ -40,7 +40,6 @@ QtObject {
 
     property int fontSize: px(value("fontSize", 16))
     property string fontFamily: value("fontFamily", "Space Grotesk")
-    property string headerFont: value("headerFont", "Dela Gothic One")
 
     property int windowSpacing: px(value("windowSpacing", 8))
     property int spacing: px(10)
@@ -58,6 +57,9 @@ QtObject {
     property var buttonPadding: ({ lg: spacing * 2, md: spacing, sm: spacing })
     property var buttonFontSize: ({ lg: fontSize, md: fontSize, sm: fontSize - px(2) })
     property int buttonIconSize: px(24)
+    // Buttons joined into one pill, like the options of a setting: the gap between them and their inner corners
+    property int buttonGroupGap: px(2)
+    property int buttonJoinedRadius: radiusSm / 2
 
     // Heights follow from the padding and the taller of icon and text, so buttons never set one explicitly
     readonly property var buttonHeight: ({
@@ -141,6 +143,16 @@ QtObject {
     property int tooltipDelay: 500
     // Room around a bar button's content, which its hover highlight fills
     property int barButtonPadding: px(8)
+    // The date and time keep these widths, so their proportional digits don't resize the bar as they tick
+    property int barDateWidth: fontSize * 5.25
+    property int barTimeWidth: fontSize * 4.5
+
+    // BAR MENU
+
+    property int barMenuWidth: px(380)
+    property int barMenuPadding: spacing * 2
+    // Rows of a right click menu
+    property int barMenuItemWidth: px(220)
 
     // OSD
 

@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell.Hyprland
 import Quickshell.Wayland
 import "../../components/widgets"
+import "../../components"
 
 import qs.config
 import qs.services
@@ -56,7 +57,7 @@ PanelWindow {
             anchors.centerIn: parent
             spacing: Settings.spacing
 
-            Text {
+            StyledText {
                 text: "Keep these display settings? Going back in " + Math.ceil(Displays.remaining / 1000) + " s"
                 color: Colors.text
                 font.pixelSize: Settings.fontSize

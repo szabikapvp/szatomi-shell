@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import "../../components/widgets"
 import "widgets"
+import "../../components"
 
 import qs.config
 import qs.services
@@ -38,12 +39,6 @@ ColumnLayout {
         onBack: root.back()
     }
 
-    Rectangle {
-        Layout.fillWidth: true
-        height: 1
-        color: Colors.backgroundSubtle
-    }
-
     RowLayout {
         id: row
 
@@ -74,7 +69,7 @@ ColumnLayout {
                     onClicked: root.run(item.modelData)
                 }
 
-                Text {
+                StyledText {
                     text: item.isArmed ? "Confirm" : item.modelData.text
                     color: item.isArmed ? Colors.primary : Qt.alpha(Colors.text, 0.6)
                     font.pixelSize: Settings.fontSize - Settings.px(2)

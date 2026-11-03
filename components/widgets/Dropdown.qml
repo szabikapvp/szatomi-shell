@@ -46,7 +46,7 @@ Item {
             anchors.rightMargin: Settings.buttonPadding[root.size]
             spacing: Settings.spacing
 
-            Text {
+            StyledText {
                 text: root.options[root.currentIndex]?.text ?? ""
                 color: Colors.text
                 font.pixelSize: Settings.buttonFontSize[root.size]
@@ -159,7 +159,7 @@ Item {
                     anchors.rightMargin: Settings.spacing
                     spacing: Settings.spacing
 
-                    Text {
+                    StyledText {
                         text: option.modelData.text
                         color: option.chosen ? Colors.primary : Colors.text
                         font.pixelSize: Settings.buttonFontSize.sm

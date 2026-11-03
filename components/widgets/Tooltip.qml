@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import "../../components"
 
 import qs.config
 
@@ -36,7 +37,7 @@ PopupWindow {
         border.width: 1
         border.color: Colors.backgroundSubtle
 
-        Text {
+        StyledText {
             id: label
 
             anchors.centerIn: parent

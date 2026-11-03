@@ -3,6 +3,7 @@ import Quickshell
 import QtQuick.Layouts
 import QtQuick.Controls
 import "../../components/widgets"
+import "../../components"
 
 import qs.config
 import qs.services
@@ -51,12 +52,6 @@ ColumnLayout {
         }
     }
 
-    Rectangle {
-        width: parent.width
-        height: 1
-        color: Colors.backgroundSubtle
-    }
-
     StyledScrollView {
         id: scrollView
 
@@ -98,7 +93,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 spacing: Settings.spacing
 
-                Text {
+                StyledText {
                     text: {
                         if (!Network.wifiEnabled) return "Wi-Fi is turned off"
                         if (Network.wifiScanning) return "Scanning..."

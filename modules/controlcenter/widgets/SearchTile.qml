@@ -52,7 +52,7 @@ Tile {
             Layout.alignment: root.compact ? Qt.AlignCenter : Qt.AlignVCenter
         }
 
-        Text {
+        StyledText {
             visible: !root.compact
             text: "Search apps"
             color: Qt.darker(Colors.text, 2)

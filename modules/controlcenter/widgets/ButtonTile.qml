@@ -106,7 +106,7 @@ Tile {
 
         spacing: 0
 
-        Text {
+        StyledText {
             text: root.text
             color: Colors.text
             font.pixelSize: Settings.fontSize
@@ -116,7 +116,7 @@ Tile {
             Layout.fillWidth: true
         }
 
-        Text {
+        StyledText {
             visible: text != ""
             text: root.subtext
             color: Qt.alpha(Colors.text, 0.6)

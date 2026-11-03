@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import "../../components"
 
 import qs.config
 
@@ -32,7 +33,7 @@ Rectangle {
             Layout.fillWidth: true
             spacing: Settings.px(2)
 
-            Text {
+            StyledText {
                 visible: text != ""
                 text: section.title
                 color: Colors.text
@@ -42,7 +43,7 @@ Rectangle {
                 Layout.fillWidth: true
             }
 
-            Text {
+            StyledText {
                 visible: text != ""
                 text: section.description
                 color: Qt.alpha(Colors.text, 0.6)

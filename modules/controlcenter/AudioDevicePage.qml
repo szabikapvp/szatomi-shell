@@ -96,7 +96,7 @@ ColumnLayout {
             width: scrollView.availableWidth
             spacing: Settings.spacing
 
-            Text {
+            StyledText {
                 visible: !root.node
 
                 text: root.profiles.length > 0 ? "Not part of this profile, pick another one below" : "This device is no longer available"
@@ -187,7 +187,7 @@ ColumnLayout {
                                 spacing: Settings.spacing
                                 Layout.fillWidth: true
 
-                                Text {
+                                StyledText {
                                     // FrontLeft reads as Front Left
                                     text: PwAudioChannel.toString(modelData).replace(/([a-z])([A-Z])/g, "$1 $2")
                                     color: Colors.text
@@ -305,7 +305,7 @@ ColumnLayout {
                         spacing: Settings.spacing
                         Layout.fillWidth: true
 
-                        Text {
+                        StyledText {
                             text: modelData[0]
                             color: Qt.alpha(Colors.text, 0.6)
                             font.pixelSize: Settings.fontSize - Settings.px(2)
@@ -313,7 +313,7 @@ ColumnLayout {
                             Layout.preferredWidth: list.width / 5
                         }
 
-                        Text {
+                        StyledText {
                             text: modelData[1]
                             color: Colors.text
                             font.pixelSize: Settings.fontSize - Settings.px(2)
