@@ -295,12 +295,10 @@ hl.bind("SHIFT + ALT + C", hl.dsp.exec_cmd("hyprpicker"))
 hl.bind(mainMod .. " + " .. "F", hl.dsp.window.fullscreen())
 hl.bind(mainMod .. " + " .. "L", hl.dsp.exec_cmd("hyprlock"))
 hl.bind(mainMod .. " + " .. "V", hl.dsp.exec_cmd("copyq toggle"))
-hl.bind(mainMod .. " + " .. "SHIFT" .. " + " .. "S", hl.dsp.exec_cmd("hyprshot -m region"))
-hl.bind("Print", hl.dsp.exec_cmd("hyprcapture-ui"))   
--- HyprCapture is optional, and nil until hyprpm loads it
-if hl.plugin.hyprcapture then
-    hl.bind("SUPER + CTRL + s", hl.plugin.hyprcapture.record_stop)
-end
+hl.bind(mainMod .. " + " .. "SHIFT" .. " + " .. "S", hl.plugin.hyprcapture.open)
+hl.bind("ALT + TAB", function()
+    hl.plugin.overview.toggle()
+end, { description = "Toggle Hyprspace overview" })
 
 --#############################
 
